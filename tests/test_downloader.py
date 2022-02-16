@@ -1,117 +1,141 @@
 from os import path
-from posixpath import relpath
-import sys
-from urllib import request, parse
-import shutil
-from glob import glob
+from urllib import request
 import re
 from os import path
-
-
+from contextlib import contextmanager
 import ssl
+import json
 
-sources = {
-    "win32": {
-        "url": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-{build_type}.7z",
-        "build_type": ("essentials", "full", "full-shared"),
-        "content_type": "application/x-7z-compressed",
-    },
-    "darwin": {
-        "url": "https://evermeet.cx/ffmpeg/getrelease/{app_name}/7z",
-        "app_name": ("ffmpeg", "ffprobe"),
-        "content_type": "application/x-7z-compressed",
-        "download_all": True,
-    },
-    "linux": {
-        "url": "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-{arch}-static.tar.xz",
-        "arch": ("amd64", "i686", "arm64", "armhf", "armel"),
-        "content_type": "application/x-xz",
-        "need_ctx": True,
-    },
-}
+# download binary
+# download version info
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+@contextmanager
+def download_base(url, content_type, ctx=None):
+    with request.urlopen(url, timeout=1.0, context=ctx) as response:
+        # pprint(response.headers.get_content_type())
+        if response.headers.get_content_type() != content_type:
+            raise RuntimeError(f'"{url}" is not the expected content type.')
+        try:
+            nbytes = int(response.getheader("content-length"))
+        except:
+            nbytes = 0
+        yield response, nbytes
 
 
-def download(dstpath, platform=sys.platform, **opts):
-    src = sources[platform]
+def download_info(url, content_type, ctx=None):
+    with download_base(url, content_type, ctx) as (response, nbytes):
+        info = response.read().decode("utf-8")
+    return info
 
-    if src.get("need_ctx", False):
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-    else:
-        ctx = None
 
-    url = src["url"]
-    m = re.search(r"\{(.+?)\}", url)
-    while m:
-        key = m[1]
-        val = opts.pop(key, src[key][0])
-        if val not in src[key]:
-            raise ValueError(f"Unknown value ({val}) specified for {key}.")
-        url = url[: m.start()] + val + url[m.end() :]
-        m = re.search(r"\{(.+?)\}", url)
+def get_version_win32():
+    return download_info(
+        "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip.ver",
+        "text/plain",
+    )
 
-    zippath = path.join(dstpath, path.basename(url))
-    if not path.exists(zippath):
-        with request.urlopen(url, context=ctx) as response:
-            # pprint(response.headers.__dict__)
-            if response.headers.get_content_type() != src["content_type"]:
-                raise RuntimeError(f'"{url}" is not the expected content type.')
-            try:
-                nbytes = int(response.getheader("content-length"))
-            except:
-                nbytes = 0
-            blksz = nbytes // 32 or 1024 * 1024
-            with open(zippath, "wb") as f:
-                nread = 0
-                while True:
-                    b = response.read(blksz)
-                    if not b:
-                        break
-                    f.write(b)
-                    nread += len(b)
-                    print(f"downloaded: {nread}/{nbytes} bytes")
 
+
+
+def get_version_macos():
+    return json.loads(
+        download_info(
+            "https://evermeet.cx/ffmpeg/info/ffmpeg/release", "application/json"
+        )
+    )["version"]
+
+
+def get_version_linux():
+
+    return re.search(
+        r"version: (\d+\.\d+(?:\.\d+)?)",
+        download_info(
+            "https://johnvansickle.com/ffmpeg/release-readme.txt",
+            "text/plain",
+            ctx,
+        ),
+    )[1]
+
+
+def download_file(outfile, url, content_type, ctx=None, progress=None):
+
+    if progress:
+        progress(0, 1)
+
+    with download_base(url, content_type, ctx) as (response, nbytes):
+
+        blksz = nbytes // 32 or 1024 * 1024
+        with open(outfile, "wb") as f:
+            nread = 0
+            while True:
+                b = response.read(blksz)
+                if not b:
+                    break
+                f.write(b)
+                nread += len(b)
+                if progress:
+                    progress(nread, nbytes)
+
+    return outfile
+
+
+# if sys.platform == 'win32':
+#     def
+
+
+def download_win32(download_dir, build_type=None, progress=None):
+    build_types = ("essentials", "full", "full-shared")
+    if build_type is None:
+        build_type = build_types[0]
+    elif build_type not in build_types:
+        raise ValueError(f"Invalid build_type specified. Must be one of {build_types}")
+
+    zippath = path.join(download_dir, "ffmpeg_win32.zip")
+    url = f"https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-{build_type}.zip"
+    download_file(zippath, url, "application/zip", progress=progress)
+    return (zippath,)
+
+
+def download_macos(download_dir, progress=None):
+    zipffmpegpath = path.join(download_dir, "ffmpeg_macos.zip")
+    download_file(
+        zipffmpegpath,
+        "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip",
+        "application/zip",
+        progress=progress,
+    )
+    zipffprobepath = path.join(download_dir, "ffprobe_macos.zip")
+    download_file(
+        zipffprobepath,
+        "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip",
+        "application/zip",
+        progress=progress,
+    )
+    return zipffmpegpath, zipffprobepath
+
+
+def download_linux(download_dir, arch=None, progress=None):
+    archs = ("amd64", "i686", "arm64", "armhf", "armel")
+    if arch is None:
+        arch = archs[0]
+    elif arch not in archs:
+        raise ValueError(f"Invalid arch specified. Must be one of {arch}")
+    zippath = path.join(download_dir, "ffmpeg_linux.tar.xz")
+    url = (
+        f"https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-{arch}-static.tar.xz"
+    )
+
+    download_file(zippath, url, "application/x-xz", ctx, progress=progress)
     return zippath
 
-# --no-check-certificate
 
-
-from pprint import pprint
+print(get_version_win32(), get_version_macos(), get_version_linux())
 
 download_dir = "tests"
-
-zippath = download(download_dir,platform='linux')
-
-import tarfile
-with tarfile.open(zippath) as tar:
-    tar.extractall(path='tests')
-#
-# 
-
-
-# # import patoolib
-# # patoolib.extract_archive(zippath, outdir=download_dir)
-
-# # import os
-# # os.system(r'')
-
-# from py7zlib import Archive7z
-
-# # setup
-# with open(zippath, "rb") as fp:
-#     archive = Archive7z(fp)
-#     filenames = archive.getnames()
-#     for filename in filenames:
-#         cf = archive.getmember(filename)
-#         print(f"{filename}: crc={cf.uncompressed:x}")
-#         try:
-#             cf.checkcrc()
-#         except:
-#             raise RuntimeError(f"crc failed for {filename}")
-
-#         b = cf.read()
-#         try:
-#             assert len(b) == cf.uncompressed
-#         except:
-#             raise RuntimeError(f"incorrect uncompressed file size for {filename}")
+download_win32(download_dir)
+download_macos(download_dir)
+download_linux(download_dir)

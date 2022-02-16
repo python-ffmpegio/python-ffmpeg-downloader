@@ -154,4 +154,4 @@ docs/
 tests/*.7z
 tests/*.tar.xz
 tests/*/
-tests/7z
+tests/*.zip
