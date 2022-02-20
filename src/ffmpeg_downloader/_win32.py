@@ -5,10 +5,12 @@ from tempfile import TemporaryDirectory
 from os import path
 import zipfile
 
+home_url = "https://www.gyan.dev/ffmpeg/builds"
+
 
 def get_version():
     return download_info(
-        "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip.ver",
+        f"{home_url}/ffmpeg-release-essentials.zip.ver",
         "text/plain",
     )
 
@@ -23,7 +25,7 @@ def download_n_install(install_dir, progress=None, build_type=None):
 
     with TemporaryDirectory() as tmpdir:
         zippath = path.join(tmpdir, "ffmpeg_win32.zip")
-        url = f"https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-{build_type}.zip"
+        url = f"{home_url}/ffmpeg-release-{build_type}.zip"
         download_file(zippath, url, "application/zip", progress=progress)
 
         with zipfile.ZipFile(zippath, "r") as f:
@@ -42,6 +44,6 @@ def download_n_install(install_dir, progress=None, build_type=None):
 
         shutil.move(src_dir_path, install_dir)
 
-    return path.join(install_dir, "bin", "ffmpeg"), path.join(
-        install_dir, "bin", "ffprobe"
-    )
+
+def get_bindir(install_dir):
+    return path.join(install_dir, "bin")

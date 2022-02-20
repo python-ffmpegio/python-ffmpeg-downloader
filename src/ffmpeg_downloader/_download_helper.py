@@ -24,10 +24,9 @@ def download_info(url, content_type, ctx=None):
 
 def download_file(outfile, url, content_type, ctx=None, progress=None):
 
-    if progress:
-        progress(0, 1)
-
     with download_base(url, content_type, ctx) as (response, nbytes):
+        if progress:
+            progress(0, nbytes)
 
         blksz = nbytes // 32 or 1024 * 1024
         with open(outfile, "wb") as f:
@@ -41,7 +40,7 @@ def download_file(outfile, url, content_type, ctx=None, progress=None):
                 if progress:
                     progress(nread, nbytes)
 
-    return outfile
+    return nbytes
 
 
 def chmod(binfile):

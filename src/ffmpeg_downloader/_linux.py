@@ -3,17 +3,19 @@ from ._download_helper import download_info, download_file, chmod
 import re, ssl, tarfile, os, shutil
 from os import path
 
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
+home_url = "https://johnvansickle.com/ffmpeg"
 
 
 def get_version():
 
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
     return re.search(
         r"version: (\d+\.\d+(?:\.\d+)?)",
         download_info(
-            "https://johnvansickle.com/ffmpeg/release-readme.txt",
+            f"{home_url}/release-readme.txt",
             "text/plain",
             ctx,
         ),
@@ -27,9 +29,13 @@ def download_n_install(install_dir, progress=None, arch=None):
     elif arch not in archs:
         raise ValueError(f"Invalid arch specified. Must be one of {arch}")
 
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
     with TemporaryDirectory() as tmpdir:
         tarpath = path.join(tmpdir, "ffmpeg_linux.tar.xz")
-        url = f"https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-{arch}-static.tar.xz"
+        url = f"{home_url}/releases/ffmpeg-release-{arch}-static.tar.xz"
 
         with TemporaryDirectory() as tmpdir:
             download_file(tarpath, url, "application/x-xz", ctx, progress=progress)
@@ -50,9 +56,9 @@ def download_n_install(install_dir, progress=None, arch=None):
 
         shutil.move(src_dir_path, install_dir)
 
-    ffmpegpath = path.join(install_dir, "ffmpeg")
-    ffprobepath = path.join(install_dir, "ffprobe")
-    chmod(ffmpegpath)
-    chmod(ffprobepath)
+    for cmd in ("ffmpeg", "ffprobe"):
+        chmod(path.join(install_dir, cmd))
 
-    return ffmpegpath, ffprobepath
+
+def get_bindir(install_dir):
+    return install_dir

@@ -1,57 +1,58 @@
 from tempfile import TemporaryDirectory
 from os import path
 import json, os, zipfile
-from ._download_helper import download_info, download_file, chmod
+from ._download_helper import download_info, download_file, chmod, download_base
+
+home_url = "https://evermeet.cx/ffmpeg"
 
 
 def get_version():
     return json.loads(
-        download_info(
-            "https://evermeet.cx/ffmpeg/info/ffmpeg/release", "application/json"
-        )
+        download_info(f"{home_url}/info/ffmpeg/release", "application/json")
     )["version"]
 
 
 def download_n_install(install_dir, progress=None):
 
+    ntotal = 0
+
+    nfiles = [
+        download_base(f"{home_url}/getrelease/{cmd}/zip")
+        for cmd in ("ffmpeg", "ffprobe")
+    ]
+    ntotal = sum(nfiles)
+    n1 = nfiles[0]
+    prog = (
+        lambda nread, nbytes: progress((nread + n1) if nbytes != n1 else nread, ntotal)
+        if progress is not None
+        else None
+    )
+
     with TemporaryDirectory() as tmpdir:
-        zipffmpegpath = path.join(tmpdir, "ffmpeg_macos.zip")
-        download_file(
-            zipffmpegpath,
-            "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip",
-            "application/zip",
-            progress=progress,
-        )
-        zipffprobepath = path.join(tmpdir, "ffprobe_macos.zip")
-        download_file(
-            zipffprobepath,
-            "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip",
-            "application/zip",
-            progress=progress,
-        )
 
-        with zipfile.ZipFile(zipffmpegpath, "r") as f:
-            f.extractall(tmpdir)
-        with zipfile.ZipFile(zipffprobepath, "r") as f:
-            f.extractall(tmpdir)
+        for cmd in ("ffmpeg", "ffprobe"):
+            zippath = path.join(tmpdir, f"{cmd}.zip")
+            download_file(
+                zippath,
+                f"{home_url}/getrelease/{cmd}/zip",
+                "application/zip",
+                progress=prog,
+            )
 
-        dst_ffmpeg = path.join(install_dir, "ffmpeg")
-        try:
-            os.remove(dst_ffmpeg)
-        except:
-            pass
-        os.rename(path.join(tmpdir, "ffmpeg"), dst_ffmpeg)
-        chmod(dst_ffmpeg)
+            with zipfile.ZipFile(zippath, "r") as f:
+                f.extractall(tmpdir)
 
-        dst_ffprobe = path.join(install_dir, "ffprobe")
-        try:
-            os.remove(dst_ffprobe)
-        except:
-            pass
-        os.rename(path.join(tmpdir, "ffprobe"), dst_ffprobe)
-        chmod(dst_ffprobe)
+            dst_path = path.join(install_dir, cmd)
+            try:
+                os.remove(dst_path)
+            except:
+                pass
+            os.rename(path.join(tmpdir, cmd), dst_path)
+            chmod(dst_path)
 
         with open(path.join(install_dir, "VERSION"), "wt") as f:
             f.write(get_version())
 
-    return dst_ffmpeg, dst_ffprobe
+
+def get_bindir(install_dir):
+    return install_dir
