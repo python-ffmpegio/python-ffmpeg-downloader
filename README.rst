@@ -1,5 +1,5 @@
-`ffmpeg-downloader`: Python FFmpeg binary downloader
-===================================================
+`ffmpeg-downloader`: Python FFmpeg release build binary downloader
+==================================================================
 
 |pypi| |pypi-status| |pypi-pyvers| |github-license| |github-status|
 
@@ -14,22 +14,58 @@
 .. |github-status| image:: https://img.shields.io/github/workflow/status/python-ffmpegio/python-ffmpeg-downloader/Run%20Tests
   :alt: GitHub Workflow Status
 
-Python `ffmpeg-downloader` package automatically downloads FFmpeg binaries for Windows, Linux, & MacOS. Note 
+Python `ffmpeg-downloader` package automatically downloads the latest FFmpeg release binaries for Windows, Linux, & MacOS. Note 
 while it supports Linux and MacOS, it is intended for Windows users, for whom there is no installer is currently
 available. Linux and MacOS users should install via OS package manager (e.g., `apt-get` for Ubuntu and `brew` for MacOS).
 
-Install `ffmpeg-downloader` package via ``pip``:
+The FFmpeg release builds are downloaded from 3rd party hosts:
+
+=======  =========================================================================
+Windows  `https://www.gyan.dev/ffmpeg/builds <https://www.gyan.dev/ffmpeg/builds>`_
+Linux    `https://johnvansickle.com/ffmpeg <https://johnvansickle.com/ffmpeg>`_
+MacOS    `https://evermeet.cx/ffmpeg <https://evermeet.cx/ffmpeg>`_
+=======  =========================================================================
+
+If you appreciate their efforts to build and host these builds, please consider donating on their websites.
+
+Installation
+------------
 
 .. code-block:: bash
 
    pip install ffmpeg-downloader
 
-Console Command
----------------
+Console Commands
+----------------
 
-* 
+To download and install FFmpeg binaries:
 
-In-Python Use
--------------
+.. code-block:: bash
 
-* 
+  python -m ffmpeg_downloader
+
+To check for a newer release and update:
+
+.. code-block:: bash
+
+  python -m ffmpeg_downloader --update
+
+To uninstall:
+
+.. code-block:: bash
+
+  python -m ffmpeg_downloader --remove
+
+In Python
+---------
+
+This package exposes the following 4 attributes:
+
+.. code-block:: python
+  
+  import ffmpeg_downloader as ffdl
+
+  ffdl.ffmpeg_dir     # FFmpeg binaries directory 
+  ffdl.ffmpeg_version # version string of the intalled FFmpeg
+  ffdl.ffmpeg_path    # full path of the FFmpeg binary
+  ffdl.ffprobe_path   # full path of the FFprobe binary

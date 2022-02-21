@@ -1,11 +1,15 @@
 from urllib import request
 from contextlib import contextmanager
-import os, stat
+import os, stat, ssl
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
 
 
 @contextmanager
-def download_base(url, content_type, ctx=None):
-    with request.urlopen(url, timeout=1.0, context=ctx) as response:
+def download_base(url, content_type, timeout=None):
+    with request.urlopen(url, timeout=timeout or 1.0, context=ctx) as response:
         # pprint(response.headers.get_content_type())
         if response.headers.get_content_type() != content_type:
             raise RuntimeError(f'"{url}" is not the expected content type.')
@@ -16,15 +20,15 @@ def download_base(url, content_type, ctx=None):
         yield response, nbytes
 
 
-def download_info(url, content_type, ctx=None):
-    with download_base(url, content_type, ctx) as (response, nbytes):
+def download_info(url, content_type, timeout=None):
+    with download_base(url, content_type, timeout) as (response, nbytes):
         info = response.read().decode("utf-8")
     return info
 
 
-def download_file(outfile, url, content_type, ctx=None, progress=None):
+def download_file(outfile, url, content_type, progress=None, timeout=None):
 
-    with download_base(url, content_type, ctx) as (response, nbytes):
+    with download_base(url, content_type, timeout) as (response, nbytes):
         if progress:
             progress(0, nbytes)
 

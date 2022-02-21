@@ -1,12 +1,9 @@
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 __all__ = [
     "ffmpeg_dir",
     "ffmpeg_version",
     "ffmpeg_path",
     "ffprobe_path",
-    "has_update",
-    "update",
-    "remove",
 ]
 
 from os import listdir, path, rmdir, name as os_name
@@ -15,7 +12,7 @@ import sys
 from appdirs import user_data_dir
 
 
-if sys.platform in ("win32", "cygwin"):
+if os_name == "nt":
     from ._win32 import (
         download_n_install,
         get_version as get_latest_version,
@@ -77,7 +74,9 @@ def __getattr__(name):  # per PEP 562
             "ffmpeg_path": lambda: _ffmpeg_version()
             and path.join(_ffmpeg_dir(), "ffmpeg" if os_name != "nt" else "ffmpeg.exe"),
             "ffprobe_path": lambda: _ffmpeg_version()
-            and path.join(_ffmpeg_dir(), "ffprobe" if os_name != "nt" else "ffprobe.exe"),
+            and path.join(
+                _ffmpeg_dir(), "ffprobe" if os_name != "nt" else "ffprobe.exe"
+            ),
             "ffmpeg_version": _ffmpeg_version,
         }[name]()
     except:

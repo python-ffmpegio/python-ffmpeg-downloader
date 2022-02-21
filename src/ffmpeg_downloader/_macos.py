@@ -1,6 +1,6 @@
 from tempfile import TemporaryDirectory
 from os import path
-import json, os, zipfile
+import json, os, zipfile, shutil
 from ._download_helper import download_info, download_file, chmod, download_base
 
 home_url = "https://evermeet.cx/ffmpeg"
@@ -16,10 +16,14 @@ def download_n_install(install_dir, progress=None):
 
     ntotal = 0
 
-    nfiles = [
-        download_base(f"{home_url}/getrelease/{cmd}/zip")
-        for cmd in ("ffmpeg", "ffprobe")
-    ]
+    def get_nbytes(cmd):
+        with download_base(f"{home_url}/getrelease/{cmd}/zip", "application/zip") as (
+            _,
+            nbytes,
+        ):
+            return nbytes
+
+    nfiles = [get_nbytes(cmd) for cmd in ("ffmpeg", "ffprobe")]
     ntotal = sum(nfiles)
     n1 = nfiles[0]
     prog = (
@@ -47,7 +51,8 @@ def download_n_install(install_dir, progress=None):
                 os.remove(dst_path)
             except:
                 pass
-            os.rename(path.join(tmpdir, cmd), dst_path)
+            os.makedirs(install_dir, exist_ok=True)
+            shutil.move(path.join(tmpdir, cmd), dst_path)
             chmod(dst_path)
 
         with open(path.join(install_dir, "VERSION"), "wt") as f:

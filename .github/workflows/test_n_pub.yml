@@ -2,8 +2,6 @@ name: Run Tests
 
 on:
   push:
-    branches:
-      - "main"
     tags:
       - "v*.*.*"
   pull_request:
@@ -22,15 +20,15 @@ jobs:
         exclude:
           - os: macos-latest
             python-version: 3.7
-          - os: windows-latest
+          - os: ubuntu-latest
             python-version: 3.7
           - os: macos-latest
             python-version: 3.8
-          - os: windows-latest
+          - os: ubuntu-latest
             python-version: 3.8
           - os: macos-latest
             python-version: 3.9
-          - os: windows-latest
+          - os: ubuntu-latest
             python-version: 3.9
 
     steps:
@@ -52,7 +50,12 @@ jobs:
         run: pip install -q .
 
       - name: Run tests
-        run: pytest -vv
+        # run: pytest -vv
+        uses: nick-fields/retry@v2
+        with:
+          timeout_seconds: 15
+          max_attempts: 3
+          command: pytest -vv
 
   distribute:
     name: Distribution
