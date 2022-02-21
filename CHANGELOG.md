@@ -5,9 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.1.2]
+
+### Fixed
+
+- PyPI description not shown
+
 ## [0.1.1]
 
 - First release via GitHub Action
 
-[Unreleased]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/python-ffmpegio/python-ffmpegio/compare/94bbcc4...v0.1.1
