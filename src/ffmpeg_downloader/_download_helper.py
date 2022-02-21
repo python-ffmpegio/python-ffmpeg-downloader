@@ -9,7 +9,7 @@ ctx.verify_mode = ssl.CERT_NONE
 
 @contextmanager
 def download_base(url, content_type, timeout=None):
-    with request.urlopen(url, timeout=timeout or 1.0, context=ctx) as response:
+    with request.urlopen(url, timeout=timeout or 5.0, context=ctx) as response:
         # pprint(response.headers.get_content_type())
         if response.headers.get_content_type() != content_type:
             raise RuntimeError(f'"{url}" is not the expected content type.')

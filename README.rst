@@ -1,5 +1,5 @@
-`ffmpeg-downloader`: Python FFmpeg release build binary downloader
-==================================================================
+`ffmpeg-downloader`: Python FFmpeg release build downloader
+===========================================================
 
 |pypi| |pypi-status| |pypi-pyvers| |github-license| |github-status|
 
@@ -16,17 +16,17 @@
 
 Python `ffmpeg-downloader` package automatically downloads the latest FFmpeg release binaries for Windows, Linux, & MacOS. Note 
 while it supports Linux and MacOS, it is intended for Windows users, for whom there is no installer is currently
-available. Linux and MacOS users should install via OS package manager (e.g., `apt-get` for Ubuntu and `brew` for MacOS).
+available. Linux and MacOS users are encouraged to install via the OS package manager (e.g., `apt-get` for Ubuntu and `brew` for MacOS).
 
 The FFmpeg release builds are downloaded from 3rd party hosts:
 
-=======  =========================================================================
+=======  ==========================================================================
 Windows  `https://www.gyan.dev/ffmpeg/builds <https://www.gyan.dev/ffmpeg/builds>`_
 Linux    `https://johnvansickle.com/ffmpeg <https://johnvansickle.com/ffmpeg>`_
 MacOS    `https://evermeet.cx/ffmpeg <https://evermeet.cx/ffmpeg>`_
-=======  =========================================================================
+=======  ==========================================================================
 
-If you appreciate their efforts to build and host these builds, please consider donating on their websites.
+If you appreciate their effort to build and host these builds, please consider donating on their websites.
 
 Installation
 ------------
@@ -38,19 +38,22 @@ Installation
 Console Commands
 ----------------
 
-To download and install FFmpeg binaries:
+To download and install FFmpeg binaries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
   python -m ffmpeg_downloader
 
-To check for a newer release and update:
+To check for a newer release and update if available
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
   python -m ffmpeg_downloader --update
 
-To uninstall:
+To uninstall
+^^^^^^^^^^^^
 
 .. code-block:: bash
 
