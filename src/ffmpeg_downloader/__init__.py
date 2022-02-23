@@ -70,7 +70,7 @@ def _ffmpeg_version():
 def __getattr__(name):  # per PEP 562
     try:
         return {
-            "ffmpeg_dir": _ffmpeg_dir(),
+            "ffmpeg_dir": _ffmpeg_dir,
             "ffmpeg_path": lambda: _ffmpeg_version()
             and path.join(_ffmpeg_dir(), "ffmpeg" if os_name != "nt" else "ffmpeg.exe"),
             "ffprobe_path": lambda: _ffmpeg_version()
