@@ -28,6 +28,9 @@ MacOS    `https://evermeet.cx/ffmpeg <https://evermeet.cx/ffmpeg>`_
 
 If you appreciate their effort to build and host these builds, please consider donating on their websites.
 
+This package is used in `ffmpegio-plugin-downloader <https://github.com/python-ffmpegio/python-ffmpegio-plugin-downloader>`__
+to enable automatic detection of the FFmpeg executable.
+
 Installation
 ------------
 
