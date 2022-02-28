@@ -17,11 +17,10 @@ def download_n_install(install_dir, progress=None):
     ntotal = 0
 
     def get_nbytes(cmd):
-        with download_base(f"{home_url}/getrelease/{cmd}/zip", "application/zip") as (
-            _,
-            nbytes,
-        ):
-            return nbytes
+        response = download_base(f"{home_url}/getrelease/{cmd}/zip", "application/zip")
+        nbytes = int(response.headers["content-length"])
+        response.close()
+        return nbytes
 
     nfiles = [get_nbytes(cmd) for cmd in ("ffmpeg", "ffprobe")]
     ntotal = sum(nfiles)

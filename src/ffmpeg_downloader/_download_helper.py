@@ -1,48 +1,38 @@
-from urllib import request
-from contextlib import contextmanager
-import os, stat, ssl
-
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
+import os, stat
+import requests
 
 
-@contextmanager
-def download_base(url, content_type, timeout=None):
-    with request.urlopen(url, timeout=timeout or 5.0, context=ctx) as response:
-        # pprint(response.headers.get_content_type())
-        if response.headers.get_content_type() != content_type:
-            raise RuntimeError(f'"{url}" is not the expected content type.')
-        try:
-            nbytes = int(response.getheader("content-length"))
-        except:
-            nbytes = 0
-        yield response, nbytes
+def download_base(url, content_type, timeout=None, stream=True):
+    response = requests.get(url, timeout=timeout, stream=stream)
+    if response.headers.get("content-type", "text/plain") != content_type:
+        raise RuntimeError(f'"{url}" is not the expected content type.')
+    return response
 
 
 def download_info(url, content_type, timeout=None):
-    with download_base(url, content_type, timeout) as (response, nbytes):
-        info = response.read().decode("utf-8")
-    return info
+    response = download_base(url, content_type, timeout, stream=False)
+    return response.text
 
 
 def download_file(outfile, url, content_type, progress=None, timeout=None):
 
-    with download_base(url, content_type, timeout) as (response, nbytes):
-        if progress:
-            progress(0, nbytes)
+    response = download_base(url, content_type, timeout)
 
-        blksz = nbytes // 32 or 1024 * 1024
-        with open(outfile, "wb") as f:
-            nread = 0
-            while True:
-                b = response.read(blksz)
-                if not b:
-                    break
-                f.write(b)
-                nread += len(b)
-                if progress:
-                    progress(nread, nbytes)
+    nbytes = int(response.headers["Content-Length"])
+
+    if progress:
+        progress(0, nbytes)
+
+    blksz = nbytes // 32 or 1024 * 1024
+    with open(outfile, "wb") as f:
+        nread = 0
+        for b in response.iter_content(chunk_size=blksz):
+            if not b:
+                break
+            f.write(b)
+            nread += len(b)
+            if progress:
+                progress(nread, nbytes)
 
     return nbytes
 

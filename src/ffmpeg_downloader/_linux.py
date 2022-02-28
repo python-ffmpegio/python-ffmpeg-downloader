@@ -1,6 +1,6 @@
 from tempfile import TemporaryDirectory
 from ._download_helper import download_info, download_file, chmod
-import re, ssl, tarfile, os, shutil
+import re, tarfile, os, shutil
 from os import path
 
 home_url = "https://johnvansickle.com/ffmpeg"
