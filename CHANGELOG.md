@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.1.4]
+
+### Changed
+
+- Switched from `urllib` to `requests` package for HTTP interface
 ## [0.1.3]
 
 ### Fixed
