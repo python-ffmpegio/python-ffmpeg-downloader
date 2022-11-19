@@ -1,111 +1,49 @@
-__version__ = "0.1.4"
-__all__ = [
-    "ffmpeg_dir",
-    "ffmpeg_version",
-    "ffmpeg_path",
-    "ffprobe_path",
-]
+__version__ = "0.2.0"
 
-from os import listdir, path, rmdir, name as os_name
-from shutil import rmtree
-import sys
-from appdirs import user_data_dir
+import os
+from . import _backend as _
 
+def add_path():
+    """Add FFmpeg directory to the process environment path
 
-if os_name == "nt":
-    from ._win32 import (
-        download_n_install,
-        get_version as get_latest_version,
-        get_bindir,
-        home_url,
-    )
-elif sys.platform == "darwin":
-    from ._macos import (
-        download_n_install,
-        get_version as get_latest_version,
-        get_bindir,
-        home_url,
-    )
-else:
-    from ._linux import (
-        download_n_install,
-        get_version as get_latest_version,
-        get_bindir,
-        home_url,
-    )
+    .. note::
+      
+      The system path is not updated with this command. The FFmpeg path is
+      only added during the life of the calling Python process.
 
-disclaimer_text = f"""
-You are about to download the latest FFmpeg release build from {home_url}. 
-Proceeding to download the file is done at your own discretion and risk and 
-with agreement that you will be solely responsible for any damage to your 
-computer system or loss of data that results from such activities. 
+      To add to the (per-user) system path, re-install the FFmpeg with `--add-path`
+      option in cli:
 
-Do you wish to proceed to download? [yN] """
+        ffdl install -U --add-path
 
-donation_text = f"""
-Start downloading...
+    .. note:: 
 
-Please remember that to maintain and host the FFmpeg binaries is not free. 
-If you appreciate their effort, please consider donating to help them with 
-the upkeep of their website via {home_url}.
-"""
+      This function does not check if the FFmpeg is installed in the path. Use
+      `ffmpeg_downloaer.installed()` to check.
 
+    """    
+    os.environ['PATH'] = os.pathsep.join([os.environ["PATH"],_.ffmpeg_path()])
 
-def get_dir():
-    return user_data_dir("ffmpeg_downloader", "ffmpegio")
+def installed(bin_name='ffmpeg'):
+    """True if FFmpeg binary is installed
 
+    :param bin_name: FFmpeg command name, defaults to 'ffmpeg'
+    :type bin_name: 'ffmpeg', 'ffprobe', or 'ffplay', optional
+    :return: True if installed
+    :rtype: bool
+    """    
 
-def _ffmpeg_dir():
-    return get_bindir(get_dir())
-
-
-def _ffmpeg_version():
-    try:
-        with open(path.join(get_dir(), "VERSION"), "rt") as f:
-            return f.read()
-    except:
-        return None
+    return os.path.isfile(_.ffmpeg_path(bin_name))
 
 
 def __getattr__(name):  # per PEP 562
     try:
         return {
-            "ffmpeg_dir": _ffmpeg_dir,
-            "ffmpeg_path": lambda: _ffmpeg_version()
-            and path.join(_ffmpeg_dir(), "ffmpeg" if os_name != "nt" else "ffmpeg.exe"),
-            "ffprobe_path": lambda: _ffmpeg_version()
-            and path.join(
-                _ffmpeg_dir(), "ffprobe" if os_name != "nt" else "ffprobe.exe"
-            ),
-            "ffmpeg_version": _ffmpeg_version,
+            "ffmpeg_dir": lambda: _.ffmpeg_path(),
+            "ffmpeg_path": lambda: _.ffmpeg_path("ffmpeg"),
+            "ffprobe_path": lambda: _.ffmpeg_path("ffprobe"),
+            "ffplay_path": lambda: _.ffmpeg_path("ffplay"),
+            "ffmpeg_version": _.ffmpeg_version,
         }[name]()
     except:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
-
-
-def has_update():
-    current = __getattr__("ffmpeg_version")
-    latest = get_latest_version()
-    return current != latest
-
-
-def update(skip_disclaimer=False, progress=None, **options):
-    if has_update():
-
-        if not skip_disclaimer:
-            ans = input(disclaimer_text)
-            if ans.lower() not in ("y", "yes"):
-                print("\ndownload canceled")
-                return
-            print(donation_text)
-        download_n_install(get_dir(), progress, **options)
-        return False
-    return True
-
-
-def remove(ignore_errors=True):
-    dir = get_dir()
-    rmtree(dir, ignore_errors=ignore_errors)
-    dir = path.dirname(dir)
-    if not len(listdir(dir)):
-        rmdir(dir)

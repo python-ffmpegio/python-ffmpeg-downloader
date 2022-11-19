@@ -1,27 +1,43 @@
 import os, stat
 import requests
+from requests.adapters import HTTPAdapter
 
 
-def download_base(url, content_type, timeout=None, stream=True):
-    response = requests.get(url, timeout=timeout, stream=stream)
-    if response.headers.get("content-type", "text/plain") != content_type:
-        raise RuntimeError(f'"{url}" is not the expected content type.')
+def download_info(
+    url, headers={}, params={}, stream=False, timeout=None, retries=None, proxy=None
+):
+    http = requests.Session()
+    http.mount("https://", HTTPAdapter(max_retries=5))
+    response = http.get(
+        url,
+        headers=headers,
+        params=params,
+        timeout=timeout,
+        stream=stream,
+        proxies=proxy,
+    )
     return response
 
 
-def download_info(url, content_type, timeout=None):
-    response = download_base(url, content_type, timeout, stream=False)
-    return response.text
+def download_file(
+    outfile,
+    url,
+    headers={},
+    params={},
+    progress=None,
+    timeout=None,
+    retries=None,
+    proxy=None,
+):
 
+    response = download_info(
+        url, headers, params, stream=True, timeout=timeout, retries=retries, proxy=proxy
+    )
 
-def download_file(outfile, url, content_type, progress=None, timeout=None):
-
-    response = download_base(url, content_type, timeout)
-
-    nbytes = int(response.headers["Content-Length"])
+    nbytes = int(response.headers.get("Content-Length", 0))
 
     if progress:
-        progress(0, nbytes)
+        progress = progress(nbytes)
 
     blksz = nbytes // 32 or 1024 * 1024
     with open(outfile, "wb") as f:
@@ -32,7 +48,7 @@ def download_file(outfile, url, content_type, progress=None, timeout=None):
             f.write(b)
             nread += len(b)
             if progress:
-                progress(nread, nbytes)
+                progress.update(nread)
 
     return nbytes
 
