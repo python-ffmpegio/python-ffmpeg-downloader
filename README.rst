@@ -118,7 +118,7 @@ Additionally, there are multiple options for each build for the Windows builds:
                    (release builds only)
 ===============    ===========================================================================
 
-See `gyan.dev<https://www.gyan.dev/ffmpeg/builds/#about-these-builds>`_ for more information. 
+Visit `gyan.dev <https://www.gyan.dev/ffmpeg/builds/#about-these-builds>`_ for more information. 
 To specify which flavor to install, use ``@``
 
 .. code-block:: bash
