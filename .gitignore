@@ -155,3 +155,4 @@ tests/*.7z
 tests/*.tar.xz
 tests/*/
 tests/*.zip
+.DS_Store
