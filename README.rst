@@ -81,8 +81,8 @@ In Windows and MacOS, the binary folder can be added to the system path by `--ad
 The new system paths won't be applied to the current console window. You may need to close and reopen
 or possibly log out and log back in for the change to take effect.
 
-To install the latest git snapshot (master) build:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To install the latest git master snapshot build:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
