@@ -88,8 +88,20 @@ To install the latest git snapshot (master) build:
 
   ffdl install snapshot
 
+To list or search available release versions:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use ``list`` and ``search`` commands.
+
+.. code-block:: bash
+
+  ffdl list     # lists all available releases
+
+  ffdl search 5 # lists all v5 releases 
+
+
 To specify a release version:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Add version number as the last argument of the command:
 
