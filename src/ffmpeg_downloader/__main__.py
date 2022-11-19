@@ -396,10 +396,11 @@ def main():
 
     args = parser.parse_args()
 
-    # try:
-    args.func(args)
-    # except:
-    #     parser.print_help()
+    try:
+        args.func(args)
+    except:
+        print('Unknown command.')
+        parser.print_help()
 
 
 if __name__ == "__main__":
