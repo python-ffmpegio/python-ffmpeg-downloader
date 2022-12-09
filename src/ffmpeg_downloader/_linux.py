@@ -12,9 +12,14 @@ home_url = "https://johnvansickle.com/ffmpeg"
 
 # last one gets picked
 asset_priority = ["amd64", "i686", "arm64", "armhf", "armel"]
+mapping = {
+    "aarch64": "arm64"
+}
 
 # place the matching cpu arch first (need test)
 arch = platform.machine()
+if arch in mapping:
+    arch = mapping[arch]
 try:
     # TODO - adjust as feedback for different architecture is provided
     i = asset_priority.index(arch)
