@@ -209,12 +209,16 @@ def set_symlinks(binpaths):
 
     symlinks = {name: path.join(d, name) for name in binpaths}
     for name, binpath in binpaths.items():
+        err = True
         if path.isfile(binpath):  # ffplay is not included
             try:
                 os.symlink(binpath, symlinks[name])
+                err = False
             except FileExistsError:
                 # already symlinked (or file placed by somebody else)
                 pass
+        if err:
+            del symlinks[name]
     return symlinks
 
 
