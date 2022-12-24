@@ -219,7 +219,7 @@ def set_symlinks(binpaths):
 
 
 def clr_symlinks(symlinks):
-    for link in symlinks:
+    for link in symlinks.values():
         os.unlink(link)
 
 
