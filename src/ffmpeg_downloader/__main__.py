@@ -233,7 +233,7 @@ def uninstall(args):
     print("  Would remove:")
     print(f"    {os.path.join(ffdl.get_dir(),'ffmpeg','*')}")
 
-    if input(f"Proceed (Y/n)?: ").lower() not in ("y", "yes", ""):
+    if not args.y and input(f"Proceed (Y/n)?: ").lower() not in ("y", "yes", ""):
         # aborted by user
         return
 
