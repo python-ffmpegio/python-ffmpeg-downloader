@@ -18,8 +18,7 @@ mapping = {
 
 # place the matching cpu arch first (need test)
 arch = platform.machine()
-if arch in mapping:
-    arch = mapping[arch]
+arch = mapping.get(arch, arch) # resolve alias
 try:
     # TODO - adjust as feedback for different architecture is provided
     i = asset_priority.index(arch)
