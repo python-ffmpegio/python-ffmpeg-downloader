@@ -237,11 +237,11 @@ def uninstall(args):
         # aborted by user
         return
 
-    # remove the ffmpeg directory
-    ffdl.remove(ignore_errors=False)
-
     # if env_vars were set, clear them
     ffdl.clr_env_vars()
+
+    # remove the ffmpeg directory
+    ffdl.remove(ignore_errors=False)
 
     print(f"  Successfully uninstalled FFmpeg: {compose_version_spec(*ver)}")
 
@@ -395,6 +395,8 @@ def main():
     parser_cache_purge.set_defaults(func=cache_purge)
 
     args = parser.parse_args()
+
+    print(args)
 
     args.func(args)
 
