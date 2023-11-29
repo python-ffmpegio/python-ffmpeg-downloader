@@ -27,7 +27,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 requires-python = ">=3.7"
-dependencies = ["requests", "tqdm>=4.40.0", "appdirs", "packaging"]
+dependencies = ["requests", "tqdm>=4.40.0", "platformdirs", "packaging"]
 
 [project.urls]
 Repository = "https://github.com/python-ffmpegio/python-ffmpeg-downloader"

@@ -1,7 +1,7 @@
 from os import listdir, path, name as os_name, getcwd, makedirs
 from shutil import rmtree, move, copyfile
 import sys
-from appdirs import user_data_dir
+from platformdirs import user_data_dir
 from packaging.version import Version
 from tempfile import TemporaryDirectory, mkdtemp
 import subprocess as sp
