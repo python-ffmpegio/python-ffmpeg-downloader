@@ -16,8 +16,10 @@ elif sys.platform == "darwin":
 else:
     from . import _linux as _
 
+home_url = _.home_url
+
 disclaimer_text = f"""
-You are about to download the latest FFmpeg release build from {_.home_url}. 
+You are about to download the latest FFmpeg release build from {home_url}. 
 Proceeding to download the file is done at your own discretion and risk and 
 with agreement that you will be solely responsible for any damage to your 
 computer system or loss of data that results from such activities. 
@@ -26,7 +28,7 @@ Do you wish to proceed to download? [Yn] """
 
 donation_text = f"""Please remember that to maintain and host the FFmpeg binaries is not free. 
 If you appreciate their effort, please consider donating to help them with 
-the upkeep of their website via {_.home_url}.
+the upkeep of their website via {home_url}.
 """
 
 preset_env_vars = {
@@ -62,7 +64,6 @@ def list(force=None, proxy=None, retries=None, timeout=None):
 def search(
     version_spec, auto_select=None, force=None, proxy=None, retries=None, timeout=None
 ):
-
     version, option = parse_version(version_spec or "release")
     config = Config()
 
@@ -205,7 +206,6 @@ def download(
 
 
 def install(*install_files, progress=None):
-
     dir = path.join(get_dir(), "ffmpeg")
     tmpdir = mkdtemp()
     failed = True
