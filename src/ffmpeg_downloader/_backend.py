@@ -193,7 +193,7 @@ def download(
                     copyfile(zippath, cache_info[0])
 
                 # move the downloaded file to the final destination
-                if cache_info[0] != dstpath:
+                if not zippath.startswith(dst):
                     move(zippath, dst)
             elif cache_info[0] != dstpath:
                 # if not downloading to the cache dir, copy the file
