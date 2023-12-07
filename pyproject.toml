@@ -37,5 +37,8 @@ Pull_Requests = "https://github.com/python-ffmpegio/python-ffmpegio-downloader/p
 [project.scripts]
 ffdl = "ffmpeg_downloader.__main__:main"
 
+[project.gui-scripts]
+ffdl-gui = "ffmpeg_downloader.qt.__main__:main"
+
 [tool.setuptools.dynamic]
 version = { attr = "ffmpeg_downloader.__version__" }
