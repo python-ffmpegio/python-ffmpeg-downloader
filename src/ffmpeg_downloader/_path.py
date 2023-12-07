@@ -1,5 +1,5 @@
 from os import path
-from appdirs import user_data_dir
+from platformdirs import user_data_dir
 
 def get_dir():
     return user_data_dir("ffmpeg-downloader", "ffmpegio")

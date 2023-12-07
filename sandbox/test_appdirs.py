@@ -1,4 +1,4 @@
-import appdirs
+import platformdirs
 
 # get current version
 # get current paths (ffmpeg/ffprobe)
@@ -7,4 +7,4 @@ import appdirs
 
 app = "ffmpeg-downloader", "python-ffmpegio"
 
-print(appdirs.user_data_dir(*app))
+print(platformdirs.user_data_dir(*app))
