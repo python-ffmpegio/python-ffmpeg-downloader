@@ -6,7 +6,11 @@
             "type": "python",
             "request": "launch",
             "module": "${fileDirnameBasename}",
-            "justMyCode": true
+            "justMyCode": true,
+            "args": [
+                "install",
+                "-y"
+            ],
         },
         {
             "name": "Python: Current File",
@@ -22,7 +26,8 @@
             "request": "launch",
             "module": "ffmpeg_downloader",
             "args": [
-                "uninstall"
+                "uninstall",
+                "-y"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
