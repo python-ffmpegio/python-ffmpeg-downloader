@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Module",
+            "type": "python",
+            "request": "launch",
+            "module": "${fileDirnameBasename}",
+            "justMyCode": true
+        },
+        {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
@@ -10,7 +17,7 @@
             "justMyCode": false
         },
         {
-            "name": "Python: Module",
+            "name": "Python: Module Uninstall",
             "type": "python",
             "request": "launch",
             "module": "ffmpeg_downloader",
