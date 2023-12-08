@@ -11,7 +11,7 @@
   :alt: PyPI - Python Version
 .. |github-license| image:: https://img.shields.io/github/license/python-ffmpegio/python-ffmpeg-downloader
   :alt: GitHub License
-.. |github-status| image:: https://img.shields.io/github/workflow/status/python-ffmpegio/python-ffmpeg-downloader/Run%20Tests
+.. |github-status| image:: https://img.shields.io/github/actions/workflow/status/python-ffmpegio/python-ffmpeg-downloader/test_n_pub.yml?branch=main
   :alt: GitHub Workflow Status
 
 Python `ffmpeg-downloader` package automatically downloads the latest FFmpeg prebuilt binaries for Windows, Linux, & MacOS. 
