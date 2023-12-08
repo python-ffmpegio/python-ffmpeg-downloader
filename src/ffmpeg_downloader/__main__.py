@@ -61,7 +61,6 @@ def cache_purge(args):
 
 
 def download(args):
-
     # select the version/asset
     version = ffdl.search(
         args.version, True, args.force, args.proxy, args.retries, args.timeout
@@ -112,7 +111,6 @@ def inquire_downloading(download_info, args):
 
 
 def install(args):
-
     # validate environmental variable related arguments
     env_vars = {}
     if args.set_env is not None:
@@ -181,7 +179,6 @@ def install(args):
 
     cache_dir = mkdtemp() if no_cache_dir else ffdl.cache_dir()
     try:
-
         # download the install file(s)
         dstpaths = ffdl.download(
             download_info,
@@ -220,7 +217,9 @@ def install(args):
     # set symlinks or env vars
     ffdl.set_env_vars(args.add_path, env_vars, args.no_simlinks)
 
-    print(f"Successfully installed FFmpeg binaries: {ver_spec} in\n    {ffdl.ffmpeg_path()}")
+    print(
+        f"Successfully installed FFmpeg binaries: {ver_spec} in\n    {ffdl.ffmpeg_path()}"
+    )
 
 
 def uninstall(args):
