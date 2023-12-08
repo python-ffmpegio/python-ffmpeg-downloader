@@ -30,8 +30,10 @@ asset_names = {
 # last one gets picked
 asset_priority = ["full-shared", "full", "essentials"]
 
+
 def are_assets_options():
     return True
+
 
 def get_latest_version(proxy=None, retries=None, timeout=None):
     return Version(
@@ -57,8 +59,14 @@ def get_latest_snapshot(proxy=None, retries=None, timeout=None):
     config = Config()
     snapshot = config.snapshot
     if ver not in snapshot:
-        assets, eol = retrieve_releases_page(1, ver, 10, proxy, retries, timeout)
-        if eol:
+        page = 1
+        assets, eol = retrieve_releases_page(page, ver, 100, proxy, retries, timeout)
+        while assets is None and not eol:
+            page += 1
+            assets, eol = retrieve_releases_page(
+                page, ver, 100, proxy, retries, timeout
+            )
+        if assets is None:
             raise ValueError(f"Assets for snapshot {ver} could not be located.")
         config = Config()
         config.snapshot = {ver: assets}
@@ -85,7 +93,6 @@ def check_rate_limit(proxy=None, retries=None, timeout=None):
 def retrieve_releases_page(
     page, snapshot=None, per_page=100, proxy=None, retries=None, timeout=None
 ):
-
     headers = {"Accept": "application/vnd.github+json"}
     url = "https://api.github.com/repos/GyanD/codexffmpeg/releases"
 
@@ -124,19 +131,18 @@ def retrieve_releases_page(
             None,
         ), not len(info)
     else:
-        
         return {
             tag: url
             for tag, url in (
                 (Version(rel["tag_name"]), extract_assets(rel["assets"]))
-                for rel in info if re.match(r'\d+\.\d+(?:\.\d+)?$', rel['tag_name'])
+                for rel in info
+                if re.match(r"\d+\.\d+(?:\.\d+)?$", rel["tag_name"])
             )
             if tag
         }, not len(info)
 
 
 def update_releases_info(force=None, proxy=None, retries=None, timeout=None):
-
     config = Config()
     releases = {} if force else config.releases
     changed = False
@@ -187,7 +193,6 @@ def get_download_info(version, option):
 
 
 def extract(zippaths, dst, progress=None):
-
     zippath = zippaths[0]
 
     with zipfile.ZipFile(zippath, "r") as f:
