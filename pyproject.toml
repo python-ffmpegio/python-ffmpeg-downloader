@@ -35,7 +35,7 @@ Issues = "https://github.com/python-ffmpegio/python-ffmpegio-downloader/issues"
 Pull_Requests = "https://github.com/python-ffmpegio/python-ffmpegio-downloader/pulls"
 
 [project.scripts]
-ffdl = "ffmpeg_downloader.__main__:main"
+ffdl = "ffmpeg_downloader.ffdl:run"
 
 [project.gui-scripts]
 ffdl-gui = "ffmpeg_downloader.qt.__main__:main"

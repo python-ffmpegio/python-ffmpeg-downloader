@@ -249,9 +249,11 @@ def show(args):
     pass
 
 
-def main():
+def main(prog: str):
     # create the top-level parser
-    parser = argparse.ArgumentParser(description="Download and manage FFmpeg prebuilds")
+    parser = argparse.ArgumentParser(
+        prog=prog, description="Download and manage FFmpeg prebuilds"
+    )
 
     parser.add_argument(
         "--proxy",
