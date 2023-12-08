@@ -395,10 +395,11 @@ def main():
 
     args = parser.parse_args()
 
-    print(args)
-
-    args.func(args)
+    if "func" in args:
+        args.func(args)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
-    main()
+    main("python -m ffmpeg_downloader")
