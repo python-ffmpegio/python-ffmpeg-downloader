@@ -192,20 +192,22 @@ def extract(tarpaths, dst, progress=None):
     return dstsub
 
 
-def set_symlinks(binpaths):
-
-    user_home = path.expanduser("~")
-    user_bindirs = [path.join(user_home, ".local", "bin"), path.join(user_home, "bin")]
-    d = next(
-        (d for d in user_bindirs if path.isdir(d)),
-        None,
-    )
-    if d is None:
-        d = user_bindirs[0]
-        os.makedirs(d, exist_ok=True)
-        print(
-            "!!!Created ~/.local/bin. Must log out and back in for the setting to take effect (or update .profile or .bashrc).!!!"
+def set_symlinks(binpaths, target=None):
+    if target:
+        d = target
+    else:
+        user_home = path.expanduser("~")
+        user_bindirs = [path.join(user_home, ".local", "bin"), path.join(user_home, "bin")]
+        d = next(
+            (d for d in user_bindirs if path.isdir(d)),
+            None,
         )
+        if d is None:
+            d = user_bindirs[0]
+            os.makedirs(d, exist_ok=True)
+            print(
+                "!!!Created ~/.local/bin. Must log out and back in for the setting to take effect (or update .profile or .bashrc).!!!"
+            )
 
     symlinks = {name: path.join(d, name) for name in binpaths}
     for name, binpath in binpaths.items():

@@ -1,3 +1,4 @@
+import sys
 from os import path
 import re, os, zipfile
 
@@ -165,7 +166,9 @@ def extract(zippaths, dst, progress=None):
 
 
 def set_symlinks(binpaths):
-    raise NotImplementedError("--set_symlinks option is not supported on Mac")
+    from . import _linux as linux
+    target = path.dirname(sys.executable)
+    linux.set_symlinks(binpaths, target)
 
 
 def clr_symlinks(symlinks):
