@@ -1,6 +1,6 @@
 from os import path
 import re, os, zipfile
-
+import platform
 from shutil import copyfileobj
 from packaging.version import Version
 
@@ -8,7 +8,10 @@ from ._download_helper import download_info, chmod
 from ._config import Config
 
 home_url = "https://evermeet.cx"
-
+# TODO:
+# - switch to home_url = "https://osxexperts.net/"
+# - consult https://github.com/eugeneware/ffmpeg-static for downloading
+# - use platform.processor() to identify the cpu type ('arm' vs. 'i386')
 
 def are_assets_options():
     return False
