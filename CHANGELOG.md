@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-02-10
+
+### Changed
+
+- `ffdl.installed` can return the path with new optional argument `return_path=True`
+- `ffdl.ffxxx_path` attributes returns None if the binary is not installed
+
+### Fixed
+
+- `main` - allows no input argument (display the help text)
+
 ## [0.3.0] - 2023-12-07
 
 ### Added
@@ -57,7 +68,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 - First release via GitHub Action
 
-[Unreleased]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/python-ffmpegio/python-ffmpegio/compare/v0.1.3...v0.1.4
