@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __version__ = "0.3.0"
 
 import os
@@ -26,25 +28,29 @@ def add_path():
     os.environ["PATH"] = os.pathsep.join([os.environ["PATH"], _.ffmpeg_path()])
 
 
-def installed(bin_name="ffmpeg"):
+def installed(
+    bin_name: str = "ffmpeg", *, return_path: bool = False
+) -> bool | str | None:
     """True if FFmpeg binary is installed
 
     :param bin_name: FFmpeg command name, defaults to 'ffmpeg'
-    :type bin_name: 'ffmpeg', 'ffprobe', or 'ffplay', optional
+    :param return_path: True to return the valid path (or None if not installed),
+                        defaults to False
     :return: True if installed
-    :rtype: bool
     """
 
-    return os.path.isfile(_.ffmpeg_path(bin_name))
+    p = _.ffmpeg_path(bin_name)
+    tf = os.path.isfile(p)
+    return tf if not return_path else p if tf else None
 
 
 def __getattr__(name):  # per PEP 562
     try:
         return {
             "ffmpeg_dir": lambda: _.ffmpeg_path(),
-            "ffmpeg_path": lambda: _.ffmpeg_path("ffmpeg"),
-            "ffprobe_path": lambda: _.ffmpeg_path("ffprobe"),
-            "ffplay_path": lambda: _.ffmpeg_path("ffplay"),
+            "ffmpeg_path": lambda: installed("ffmpeg", return_path=True),
+            "ffprobe_path": lambda: installed("ffprobe", return_path=True),
+            "ffplay_path": lambda: installed("ffplay", return_path=True),
             "ffmpeg_version": _.ffmpeg_version,
         }[name]()
     except:
