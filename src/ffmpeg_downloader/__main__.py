@@ -249,7 +249,7 @@ def show(args):
     pass
 
 
-def main(prog: str):
+def main(prog: str = ""):
     # create the top-level parser
     parser = argparse.ArgumentParser(
         prog=prog, description="Download and manage FFmpeg prebuilds"
