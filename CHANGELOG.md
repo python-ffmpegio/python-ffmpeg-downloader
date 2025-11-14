@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.4.1] - 2025-11-14
+
+### Fixed
+
+- (PR#9 by @ucordia) Fix dst argument to accept a single value instead of list
+
 ## [0.4.0] - 2025-02-10
 
 ### Changed
