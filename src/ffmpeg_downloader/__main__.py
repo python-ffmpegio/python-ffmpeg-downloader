@@ -350,7 +350,7 @@ def main(prog: str = ""):
     parser_download = subparsers.add_parser("download", help="Download FFmpeg")
     # specify version and build options (version string or 'snapshot') (optional argument), 5.1.2 or 5.1.2@essential or 5.1.2@arm or snapshot
     parser_download.add_argument(
-        "-d", "--dst", nargs=1, help="Download FFmpeg zip/tar file into <DIR>"
+        "-d", "--dst", help="Download FFmpeg zip/tar file into <DIR>"
     )
     parser_download.add_argument(
         "-y", action="store_true", help="Don't ask for confirmation to download."
