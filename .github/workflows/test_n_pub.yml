@@ -13,17 +13,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.14"]
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
-          - os: ubuntu-latest
-            python-version: 3.9
           - os: ubuntu-latest
             python-version: "3.10"
           - os: ubuntu-latest
             python-version: "3.11"
           - os: ubuntu-latest
             python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.13"
 
     steps:
       - run: echo ${{github.ref}}
@@ -43,6 +43,9 @@ jobs:
       - name: Install ffmpeg_downloader package
         run: pip install -q .
 
+      - name: Install ffmpeg
+        run: ffdl list
+       
       - name: Install ffmpeg
         run: ffdl install -y
 
