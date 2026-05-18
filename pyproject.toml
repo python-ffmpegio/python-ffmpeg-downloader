@@ -20,15 +20,15 @@ classifiers = [
     "Topic :: Multimedia :: Video",
     "Topic :: Multimedia :: Video :: Capture",
     "Topic :: Multimedia :: Video :: Conversion",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dynamic = ["version"]
-requires-python = ">=3.7"
-dependencies = ["requests", "tqdm>=4.40.0", "platformdirs", "packaging"]
+requires-python = ">=3.10"
+dependencies = ["requests", "tqdm>=4.40.0", "platformdirs", "packaging", "tabulate", "typing_extensions"]
 
 [project.urls]
 Repository = "https://github.com/python-ffmpegio/python-ffmpeg-downloader"
