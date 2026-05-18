@@ -26,13 +26,18 @@ Those who intend to use a release version in Linux and MacOS are encouraged to i
 
 The FFmpeg builds will be downloaded from 3rd party hosts:
 
-=======  ==========================================================================
-Windows  `https://www.gyan.dev/ffmpeg/builds <https://www.gyan.dev/ffmpeg/builds>`_
-Linux    `https://johnvansickle.com/ffmpeg <https://johnvansickle.com/ffmpeg>`_
-MacOS    `https://evermeet.cx/ffmpeg <https://evermeet.cx/ffmpeg>`_
-=======  ==========================================================================
+===============  ================================================================================
+Windows & Linux  `https://github.com/BtbN/FFmpeg-Builds <https://github.com/BtbN/FFmpeg-Builds>`_
+Windows          `https://www.gyan.dev/ffmpeg/builds <https://www.gyan.dev/ffmpeg/builds>`_
+Linux            `https://johnvansickle.com/ffmpeg <https://johnvansickle.com/ffmpeg>`_
+MacOS            `https://osxexperts.net/ <https://osxexperts.net>`_
+MacOS            `https://evermeet.cx/ffmpeg <https://evermeet.cx/ffmpeg>`_
+===============  ================================================================================
 
 If you appreciate their effort to build and host these builds, please consider donating on their websites.
+
+Note that BtbN and Gyan offer multiple build types. Use the `ffdl.list` command.
+
 
 Installation
 ------------
@@ -91,41 +96,141 @@ To install the latest git master snapshot build:
 To list or search available release versions:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Use ``list`` and ``search`` commands.
+Use ``list`` and ``search`` commands to see available releases.
+
+The ``list`` command lists all the releases:
 
 .. code-block:: bash
 
-  ffdl list     # lists all available releases
+  ffdl list
 
-  ffdl search 5 # lists all v5 releases 
+.. raw:: html
+
+  <details>
+    <summary>Example output in Linux</summary>
+
+    <pre>
+      <code>
+        Version        Available Builds (*=cached)          Provider
+        -------------  -----------------------------------  -----------------
+        3.3.4          static                               johnvansickle.com
+        3.4.2          static                               johnvansickle.com
+        4.0.3          static                               johnvansickle.com
+        4.1.4          static                               johnvansickle.com
+        4.2.1          static                               johnvansickle.com
+        4.2.2          static                               johnvansickle.com
+        4.3.1          static                               johnvansickle.com
+        4.3.2          static                               johnvansickle.com
+        4.4            static                               johnvansickle.com
+        4.4.1          static                               johnvansickle.com
+        5.0.1          static                               johnvansickle.com
+        5.1.1          static                               johnvansickle.com
+        5.1.5.post106  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        5.1.6.post16   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        6.0            static                               johnvansickle.com
+        6.0.1          static                               johnvansickle.com
+        6.1.1.post329  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        6.1.2.post192  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        7.0.1.post221  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        7.0.2          static*                              johnvansickle.com
+        7.0.2.post6    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        7.1.post214    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        7.1.1.post57   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        7.1.2.post7    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        7.1.3.post46   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        8.0.post30     gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        8.0.1.post66   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+        8.1.post11     gpl*, gpl-shared, lgpl, lgpl-shared  btbn
+        8.1.1.post1    gpl*, gpl-shared*, lgpl*             btbn
+        8.1.1.post2    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+
+        To install specific build, ffdl install &lt;version&gt;@&lt;build_type&gt;
+      </code>
+    </pre>
+  </details>
+  <details>
+    <summary>Example output in Windows</summary>
+    <pre>
+      <code>
+        Version        Available Builds (*=cached)         Provider
+        -------------  ----------------------------------  ----------
+        4.4            essentials, full, full-shared       gyan
+        4.4.1          essentials, full, full-shared       gyan
+        5.0            essentials, full, full-shared       gyan
+        5.0.1          essentials, full, full-shared       gyan
+        5.1            essentials, full, full-shared       gyan
+        5.1.1          essentials, full, full-shared       gyan
+        5.1.2          essentials, full, full-shared       gyan
+        5.1.5.post106  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        5.1.6.post16   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        6.0            essentials, full, full-shared       gyan
+        6.1            essentials, full, full-shared       gyan
+        6.1.1          essentials, full, full-shared       gyan
+        6.1.1.post329  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        6.1.2.post192  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        7.0            essentials, full, full-shared       gyan
+        7.0.1          essentials, full, full-shared       gyan
+        7.0.1.post221  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        7.0.2          essentials, full, full-shared       gyan
+        7.0.2.post6    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        7.1            essentials, full, full-shared       gyan
+        7.1.post214    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        7.1.1          essentials, full, full-shared       gyan
+        7.1.1.post57   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        7.1.2.post7    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        7.1.3.post46   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        8.0            essentials, full, full-shared       gyan
+        8.0.post30     gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        8.0.1          essentials, full, full-shared       gyan
+        8.0.1.post66   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        8.1            essentials, full, full-shared       gyan
+        8.1.post11     gpl, gpl-shared, lgpl, lgpl-shared  btbn
+        8.1.1          essentials, full, full-shared       gyan
+        8.1.1.post2    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+
+        To install specific build, ffdl install &lt;version&gt;@&lt;build_type&gt;
+      </code>
+    </pre>
+
+    Note: <pre>-shared</pre> builds are currently not working.
+  </details>
+  <details>
+    <summary>Example output in MacOS</summary>
+    <pre>
+      <code>
+          Version  Available Builds (*=cached)    Provider
+        ---------  -----------------------------  --------------
+              8.1  static                         osxexperts.net
+
+        To install specific build, ffdl install &lt;version&gt;@&lt;build_type&gt;
+      </code>
+    </pre>
+  </details>
+
+The ``search`` command lists only the releases that matches the query:
+
+.. code-block:: bash
+
+  ffdl search 7 # lists all v7 releases 
+  ffdl search @gpl # list all releases with gpl builds (of btbn)
+  ffdl search =7.0.2 # lists only v7.0.2 release, excluding 7.0.2post versions
 
 
 To specify a release version:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Add version number as the last argument of the command:
+Add version number as the last argument of the ``install`` command similar as
+the ``search`` command:
 
 .. code-block:: bash
 
-  ffdl install 4.4
-
-Additionally, there are multiple options for each build for the Windows builds:
-
-===============    ===========================================================================
-``essentials``     Built only with commonly used third-party libraries (default option)
-``full``           Built with the most third-party libraries
-``full-shared``    Same as ``full`` but separate shared libraries (DLLs) and development files 
-                   (release builds only)
-===============    ===========================================================================
-
-Visit `gyan.dev <https://www.gyan.dev/ffmpeg/builds/#about-these-builds>`_ for more information. 
-To specify which flavor to install, use ``@``
-
-.. code-block:: bash
+  ffdl install 7 # install the latest v7 release
+  ffdl install @gpl # install the latest BtBN gpl build of FFmpeg 7
+  ffdl install =7.0.2 # install the 7.0.2 release from johnvansickle.com or 
+                      # gyan.dev (excludes BtBN post release)
 
    ffdl install snapshot@full   # full build of latest snapshot
-   ffdl install 5.2@full-shared # full build of v5.2
-
+   
 To update or change version if available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
