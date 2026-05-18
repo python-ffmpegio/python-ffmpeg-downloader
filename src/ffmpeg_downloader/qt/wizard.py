@@ -3,16 +3,16 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-from tempfile import mkdtemp
-from shutil import rmtree
-from tqdm.utils import CallbackIOWrapper
-from typing import Optional, Any
 from os import path
-
-from .. import _backend as ffdl
-from .qt_compat import QtCore, QtWidgets, QtGui
+from shutil import rmtree
+from tempfile import mkdtemp
+from typing import Any, Optional
 
 from PyQt6.QtWidgets import QWizard
+from tqdm.utils import CallbackIOWrapper
+
+from .. import _backend as ffdl
+from .qt_compat import QtCore, QtGui, QtWidgets
 
 QObject = QtCore.QObject
 QThread = QtCore.QThread
@@ -52,7 +52,7 @@ class DownloadProgress(QObject):
         self.progress.emit(self.last)
 
     def done(self):
-        logger.debug(f"progress: done")
+        logger.debug("progress: done")
         self.progress.emit(self.size)
 
 
@@ -64,7 +64,7 @@ class InstallProgress(DownloadProgress):
 class FFmpegInstaller(QObject):
     found_installed_version = pyqtSignal(str, bool)
     """version/done"""
-    found_latest_version = pyqtSignal(tuple, bool)
+    found_latest_version = pyqtSignal(str, bool)
     """version/done, if bool=False, wait for response via queue"""
     server_error = pyqtSignal(str)
     """str-exception message"""
@@ -101,10 +101,10 @@ class FFmpegInstaller(QObject):
             return
 
         try:
-            version = ffdl.search(
+            build = ffdl.search(
                 version_spec=None, auto_select=True, force=True, **request_kws
             )
-            if version is None:
+            if build is None:
                 raise RuntimeError("Could not find a suitable FFMpeg version.")
         except Exception as e:
             self.server_error.emit(str(e))
@@ -113,20 +113,20 @@ class FFmpegInstaller(QObject):
 
         # check for a need to update
         already_exists = current_version is not None and (
-            current_version[0] == version[0]
+            current_version[0] == build.version
         )
 
-        self.found_latest_version.emit(version, already_exists)
+        self.found_latest_version.emit(str(build.version), already_exists)
         if already_exists:
             self.finished.emit()
 
-    @pyqtSlot(tuple, bool, dict)
-    def install(self, version: tuple, exists: bool, request_kws: dict):
+    @pyqtSlot(str, bool, dict)
+    def install(self, version: str, exists: bool, request_kws: dict):
         # import debugpy
         # debugpy.debug_this_thread()
         logger.debug(f"install: begin installing v{version[0]}")
 
-        download_info = ffdl.gather_download_info(*version, no_cache_dir=True)
+        download_info = ffdl.search(f"={version}", auto_select=True)
 
         dl_mon = DownloadProgress(self, False, self.download_progress)
         in_mon = InstallProgress(self, True, self.install_progress)
@@ -173,7 +173,7 @@ class FFmpegInstaller(QObject):
 
 class InstallFFmpegWizard(QWizard):
     req_search = pyqtSignal(bool, dict)
-    req_install = pyqtSignal(tuple, bool, dict)
+    req_install = pyqtSignal(str, bool, dict)
 
     default_labels = {
         "search_current": "Searching for a local copy of the FFmpeg, a multimedia processing library...",
@@ -219,7 +219,7 @@ such activities.""",
             "timeout": timeout,
         }
         self.old_ver_exists: bool = False
-        self.version: tuple = None  # set by Page1, used by Page2
+        self.version: str = None  # set by Page1, used by Page2
         self.install_finished: bool = False
 
         self.setWindowTitle(window_title or "FFmpeg Download & Install Wizard")
@@ -288,8 +288,8 @@ such activities.""",
         if done:
             self.install_finished = True
 
-    @pyqtSlot(tuple, bool)
-    def _found_latest_version(self, ver: tuple, done: bool):
+    @pyqtSlot(str, bool)
+    def _found_latest_version(self, ver: str, done: bool):
         self.version = ver
         if done:
             self.install_finished = True
@@ -370,7 +370,7 @@ class Page1(QWizardPage):
         else:
             self.latest_ver_label.setText(self.labels["search_latest"])
 
-    @pyqtSlot(tuple, bool)
+    @pyqtSlot(str, bool)
     def _found_latest_version(self, ver, done):
         self.complete = True
         self.latest_ver_label.setText(self.labels["latest_ver"].format(ver[0]))
