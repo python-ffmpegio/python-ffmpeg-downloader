@@ -2,5 +2,6 @@ import ffmpeg_downloader as ffdl
 
 
 def test():
-    assert ffdl.installed('ffmpeg')
-    assert ffdl.installed('ffprobe')
+    assert ffdl.installed("ffmpeg")
+    assert ffdl.installed("ffprobe")
+    ffdl.ffmpeg_version

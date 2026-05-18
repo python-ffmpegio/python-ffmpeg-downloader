@@ -1,20 +1,22 @@
-import os, stat
+import os
+import stat
+
 import requests
 from requests.adapters import HTTPAdapter
 
 
 def download_info(
-    url, headers={}, params={}, stream=False, timeout=None, retries=None, proxy=None
+    url,
+    headers={},
+    params={},
+    stream=False,
+    max_retries: int | None = None,
+    requests_kws: dict | None = None,
 ):
     http = requests.Session()
-    http.mount("https://", HTTPAdapter(max_retries=5))
+    http.mount("https://", HTTPAdapter(max_retries=max_retries or 5))
     response = http.get(
-        url,
-        headers=headers,
-        params=params,
-        timeout=timeout,
-        stream=stream,
-        proxies=proxy,
+        url, headers=headers, params=params, stream=stream, **(requests_kws or {})
     )
     return response
 
@@ -25,13 +27,17 @@ def download_file(
     headers={},
     params={},
     progress=None,
-    timeout=None,
-    retries=None,
-    proxy=None,
+    max_retries=int | None,
+    requests_kws: dict | None = None,
 ):
 
     response = download_info(
-        url, headers, params, stream=True, timeout=timeout, retries=retries, proxy=proxy
+        url,
+        headers,
+        params,
+        stream=True,
+        max_retries=max_retries,
+        requests_kws=requests_kws,
     )
 
     nbytes = int(response.headers.get("Content-Length", 0))

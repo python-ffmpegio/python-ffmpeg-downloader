@@ -1,133 +1,90 @@
+from __future__ import annotations
+
+import os
+import zipfile
 from os import path
-import re, os, zipfile
-
 from shutil import copyfileobj
+from typing import Literal
+
 from packaging.version import Version
+from typing_extensions import LiteralString  # <3.11
 
-from ._download_helper import download_info, chmod
-from ._config import Config
+from ._config import Build, ConfigBase, SingletonMeta
+from ._download_helper import chmod
+from ._providers import evermeet, osxexperts
 
-home_url = "https://evermeet.cx"
-
-
-def are_assets_options():
-    return False
+home_url = ""
 
 
-def get_latest_version(proxy=None, retries=None, timeout=None):
+def detect_version(
+    ver_str: str,
+) -> tuple[Version | Literal["snapshot"], LiteralString, LiteralString] | None:
+    """detect version, provider, and build type
 
-    return Version(
-        download_info(
-            f"{home_url}/ffmpeg/info/ffmpeg/release",
-            {"Accept": "application/json"},
-            proxy=proxy,
-            retries=retries,
-            timeout=timeout,
-        ).json()["version"]
-    )
+    :param ver_str: `ffmpeg -version` output string
+    :return: a tuple of version, provider, and build type or None if no match found
+    """
+
+    print("detect_version")
+    print(ver_str)
+
+    return evermeet.detect_version(ver_str)
 
 
-def get_latest_snapshot(proxy=None, retries=None, timeout=None):
+class Config(ConfigBase, metaclass=SingletonMeta):
+    @property
+    def providers(self) -> list[LiteralString]:
+        """Default build type keyed by provider name"""
+        return [evermeet.provider, osxexperts.provider]
 
-    json = download_info(
-        f"{home_url}/ffmpeg/info/ffmpeg/snapshot",
-        {"Accept": "application/json"},
-        proxy=proxy,
-        retries=retries,
-        timeout=timeout,
-    ).json()
+    @property
+    def default_provider(self) -> LiteralString:
+        """Default provider name"""
+        return osxexperts.provider
 
-    ver = json["version"]
-
-    config = Config()
-    snapshot = config.snapshot
-    if ver not in snapshot:
-        get_asset = lambda json: {
-            "name": path.basename(json["download"]["zip"]["url"]),
-            "url": json["download"]["zip"]["url"],
-            "size_str": f"{round(json['download']['zip']['size']//(1024**2))}M",
+    @property
+    def build_types(self) -> dict[LiteralString, list[LiteralString]]:
+        """Default build type keyed by provider name"""
+        return {
+            osxexperts.provider: osxexperts.build_types,
+            evermeet.provider: evermeet.build_types,
         }
-        assets = {"ffmpeg": get_asset(json)}
-        config.snapshot = {ver: assets}
 
-        for app in ("ffprobe", "ffplay"):
-            assets[app] = get_asset(
-                download_info(
-                    f"{home_url}/ffmpeg/info/{app}/snapshot",
-                    {"Accept": "application/json"},
-                    proxy=proxy,
-                    retries=retries,
-                    timeout=timeout,
-                ).json()
-            )
-
-    return ver
-
-
-def retrieve_release_list(app, proxy=None, retries=None, timeout=None):
-    base_url = f"{home_url}/pub/{app}"
-    r = download_info(
-        base_url,
-        {"Accept": "text/html"},
-        proxy=proxy,
-        retries=retries,
-        timeout=timeout,
-    )
-    return base_url, re.findall(
-        rf'\<a href="({app}-(\d+\.\d+(?:\.\d+)?).zip)"\>\1\</a\>.+?(\d+M)', r.text
-    )
-
-
-def update_releases_info(force=None, proxy=None, retries=None, timeout=None):
-
-    config = Config()
-    releases = {} if force else config.releases
-
-    base_url, assets = retrieve_release_list(
-        "ffmpeg", proxy=proxy, retries=retries, timeout=timeout
-    )
-
-    if all(Version(ver) in releases for file, ver, size_str in assets):
-        return releases
-
-    # update the release list
-    releases = {
-        ver: {
-            "ffmpeg": {"name": file, "url": f"{base_url}/{file}", "size_str": size_str}
+    @property
+    def default_build_type(self) -> dict[LiteralString, LiteralString]:
+        """Default build type keyed by provider name"""
+        return {
+            evermeet.provider: evermeet.default_build,
+            osxexperts.provider: osxexperts.default_build,
         }
-        for file, ver, size_str in assets
-    }
 
-    for app in ("ffprobe", "ffplay"):
-        base_url, assets = retrieve_release_list(
-            app, proxy=proxy, retries=retries, timeout=timeout
+    def _gather_builds(
+        self, need_releases: bool = False, need_nightly: bool = False
+    ) -> tuple[list[Build], list[Build]]:
+        """gather Linux build info
+
+        :param need_releases: True to require release info to be retrieved, defaults to False
+        :param need_nightly: True to require nightly info to be retrieved (if available), defaults to False
+        :return release_catalog: list of release build info objects
+        :return nightly_catalog: list of nightly build info objects
+
+        """
+
+        osxexperts_releases, _ = osxexperts.gather_builds(
+            osxexperts.os_arch(), True, self._requests_kws
         )
-        for file, ver, size_str in assets:
-            # update the release list
-            releases[ver][app] = {
-                "name": file,
-                "url": f"{base_url}/{file}",
-                "size": size_str,
-            }
 
-    # convert the version strings to Version object
-    releases = {Version(ver): asset for ver, asset in releases.items()}
+        try:
+            # evermeet.cx (amd64 only)
+            evermeet_releases, nightly = evermeet.gather_builds(
+                evermeet.os_arch(), False, self._requests_kws
+            )
+        except:
+            # arm64 not supported
+            evermeet_releases = []
+            nightly = []
 
-    # update the releases data in the config
-    config.releases = releases
-    config.dump()
-
-
-def version_sort_key(version):
-    v, _ = version
-    return v
-
-
-def get_download_info(version, option):
-    assets = getattr(Config(), "releases" if type(version) == Version else "snapshot")[
-        version
-    ]
-    return [[v["name"], v["url"], "application/zip", None] for v in assets.values()]
+        return [*evermeet_releases, *osxexperts_releases], nightly
 
 
 def extract(zippaths, dst, progress=None):
@@ -146,13 +103,13 @@ def extract(zippaths, dst, progress=None):
             )
             for f in fzips:
                 for i in f.infolist():
-                    if getattr(i, "file_size", 0):  # file
-                        with f.open(i) as fi, open(
-                            path.join(dst, i.filename), "wb"
-                        ) as fo:
+                    if i.filename in ("ffmpeg", "ffprobe", "ffplay"):
+                        with (
+                            f.open(i) as fi,
+                            open(path.join(dst, i.filename), "wb") as fo,
+                        ):
                             copyfileobj(progress.io_wrapper(fi), fo)
-                    else:
-                        f.extract(i, dst)
+                        break
     finally:
         for f in fzips:
             f.close()
@@ -173,7 +130,7 @@ def clr_symlinks(symlinks):
 
 
 def get_profile():
-    file = ".bash_profile" if os.environ['SHELL'] == "/bin/bash" else ".zsh_profile"
+    file = ".bash_profile" if os.environ["SHELL"] == "/bin/bash" else ".zsh_profile"
     return path.join(path.expanduser("~"), file)
 
 
@@ -245,27 +202,10 @@ def set_env_vars(vars, bindir):
 def clr_env_vars(vars):
     pass
 
+
 def get_bindir(install_dir):
     return path.join(install_dir, "ffmpeg")
 
 
 def get_binpath(install_dir, app):
     return path.join(install_dir, "ffmpeg", app)
-
-
-def parse_version(ver_line, basedir):
-    m = re.match(r"ffmpeg version (.+)-tessus", ver_line)
-    if m:
-        ver = m[1]
-        try:
-            ver = Version(ver)
-        except:
-            m = re.match(r"N-(.{6}-g[a-z0-9]{10})", ver)
-            try:
-                ver = m[1]
-            except:
-                print(f'Unknown version "{ver}" found')
-
-        return ver, None
-    else:
-        return None

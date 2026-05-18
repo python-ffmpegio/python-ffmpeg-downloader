@@ -1,195 +1,82 @@
-import itertools
-from shutil import copyfileobj
-from os import path
-import subprocess as sp
-import zipfile
-from datetime import datetime
-from packaging.version import Version
-import re
-from glob import glob
+from __future__ import annotations
 
-import winreg
 import os
+import subprocess as sp
+import winreg
+import zipfile
+from os import path
+from shutil import copyfileobj
+from typing import Literal
+
+from packaging.version import Version
+from typing_extensions import LiteralString  # <3.11
+
+from ._config import Build, ConfigBase, SingletonMeta
+from ._providers import btbn, gyan
+
+home_url = ""
 
 
-from ._config import Config
-from ._download_helper import download_info
+def detect_version(
+    ver_str: str,
+) -> tuple[Version | Literal["snapshot"], LiteralString, LiteralString] | None:
+    """detect version, provider, and build type
 
-home_url = "https://www.gyan.dev/ffmpeg/builds"
+    :param ver_str: `ffmpeg -version` output string
+    :return: a tuple of version, provider, and build type or None if no match found
+    """
 
-asset_type = (
-    "application/x-zip-compressed"  # 'content_type': 'application/octet-stream' for .7z
-)
-
-asset_names = {
-    "essentials_build": "essentials",
-    "full_build": "full",
-    "shared": "full-shared",
-}
-
-# last one gets picked
-asset_priority = ["full-shared", "full", "essentials"]
+    return btbn.detect_version(ver_str) or gyan.detect_version(ver_str)
 
 
-def are_assets_options():
-    return True
+class Config(ConfigBase, metaclass=SingletonMeta):
+    @property
+    def providers(self) -> list[LiteralString]:
+        """Default build type keyed by provider name"""
+        return [btbn.provider, gyan.provider]
 
+    @property
+    def default_provider(self) -> LiteralString:
+        """Default provider name"""
+        return btbn.provider
 
-def get_latest_version(proxy=None, retries=None, timeout=None):
-    return Version(
-        download_info(
-            f"{home_url}/ffmpeg-release-essentials.7z.ver",
-            {"Accept": "text/plain"},
-            proxy=proxy,
-            retries=retries,
-            timeout=timeout,
-        ).text
-    )
+    @property
+    def build_types(self) -> dict[LiteralString, list[LiteralString]]:
+        """Default build type keyed by provider name"""
+        return {btbn.provider: btbn.build_types, gyan.provider: gyan.build_types}
 
+    @property
+    def default_build_type(self) -> dict[LiteralString, LiteralString]:
+        """Default build type keyed by provider name"""
+        return {btbn.provider: btbn.default_build, gyan.provider: gyan.default_build}
 
-def get_latest_snapshot(proxy=None, retries=None, timeout=None):
-    ver = download_info(
-        f"{home_url}/ffmpeg-git-essentials.7z.ver",
-        {"Accept": "text/plain"},
-        proxy=proxy,
-        retries=retries,
-        timeout=timeout,
-    ).text
+    def _gather_builds(
+        self, need_releases: bool = False, need_nightly: bool = False
+    ) -> tuple[list[Build], list[Build]]:
+        """gather Linux build info
 
-    config = Config()
-    snapshot = config.snapshot
-    if ver not in snapshot:
-        page = 1
-        assets, eol = retrieve_releases_page(page, ver, 100, proxy, retries, timeout)
-        while assets is None and not eol:
-            page += 1
-            assets, eol = retrieve_releases_page(
-                page, ver, 100, proxy, retries, timeout
+        :param need_releases: True to require release info to be retrieved, defaults to False
+        :param need_nightly: True to require nightly info to be retrieved (if available), defaults to False
+        :return release_catalog: list of release build info objects
+        :return nightly_catalog: list of nightly build info objects
+
+        """
+
+        # github.com/BtbN/FFmpeg-Builds
+        btbn_releases, nightly = btbn.gather_builds(
+            btbn.os_arch(), False, self._requests_kws
+        )
+
+        # gyan.dev | github.com/GyanD/codexffmpeg
+        try:
+            gyan_releases, _ = gyan.gather_builds(
+                gyan.os_arch(), True, self._requests_kws
             )
-        if assets is None:
-            raise ValueError(f"Assets for snapshot {ver} could not be located.")
-        config = Config()
-        config.snapshot = {ver: assets}
+        except RuntimeError:
+            # arm64 not supported
+            gyan_releases = []
 
-    return ver
-
-
-def check_rate_limit(proxy=None, retries=None, timeout=None):
-    try:
-        r = download_info(
-            "https://api.github.com/rate_limit",
-            {"Accept": "application/vnd.github+json"},
-            proxy=proxy,
-            retries=retries,
-            timeout=timeout,
-        )
-        status = r.json()["resources"]["core"]
-        assert status["remaining"] == 0
-        return f"You've reached the access rate limit on GitHub. Wait till {datetime.fromtimestamp(status['reset'])} and try again."
-    except:
-        return 0
-
-
-def retrieve_releases_page(
-    page, snapshot=None, per_page=100, proxy=None, retries=None, timeout=None
-):
-    headers = {"Accept": "application/vnd.github+json"}
-    url = "https://api.github.com/repos/GyanD/codexffmpeg/releases"
-
-    r = download_info(
-        url,
-        headers=headers,
-        params={"page": page, "per_page": per_page},
-        proxy=proxy,
-        retries=retries,
-        timeout=timeout,
-    )
-
-    if r.status_code != 200:
-        raise ConnectionRefusedError(
-            check_rate_limit(proxy=proxy, retries=retries, timeout=timeout)
-            or "Failed to retrieve data from GitHub"
-        )
-
-    info = r.json()
-
-    extract_assets = lambda itm: {
-        asset_names.get(
-            elm["name"].rsplit(".", 1)[0].rsplit("-", 1)[-1], elm["name"]
-        ): {k: elm[k] for k in ("name", "browser_download_url", "content_type", "size")}
-        for elm in itm
-        if elm["content_type"] == asset_type
-    }
-
-    if snapshot:
-        return next(
-            (
-                extract_assets(rel["assets"])
-                for rel in info
-                if rel["tag_name"] == snapshot
-            ),
-            None,
-        ), not len(info)
-    else:
-        return {
-            tag: url
-            for tag, url in (
-                (Version(rel["tag_name"]), extract_assets(rel["assets"]))
-                for rel in info
-                if re.match(r"\d+\.\d+(?:\.\d+)?$", rel["tag_name"])
-            )
-            if tag
-        }, not len(info)
-
-
-def update_releases_info(force=None, proxy=None, retries=None, timeout=None):
-    config = Config()
-    releases = {} if force else config.releases
-    changed = False
-
-    # update the release list
-    for page in itertools.count(1):
-        # process the release data found on the page
-        reldata, eol = retrieve_releases_page(
-            page, proxy=proxy, retries=retries, timeout=timeout
-        )
-
-        # check if any info is already in the config
-        found = next((rel in releases for rel in reldata), False)
-
-        # update the release data in the config
-        if len(reldata):
-            releases.update(reldata)
-            changed = True
-
-        # if any is already in or no more data, exit the loop
-        if found or eol:
-            break
-
-    # update the releases data in the config
-    if changed:
-        config.releases = releases
-        config.dump()
-
-
-def version_sort_key(version):
-    v, o = version
-    k = v.major * 10000 + v.minor * 1000 + v.micro * 10 if type(v) == Version else 0
-    return k + asset_priority.index(o)
-
-
-def get_download_info(version, option):
-    asset = getattr(Config(), "releases" if type(version) == Version else "snapshot")[
-        version
-    ][option]
-    return [
-        [
-            asset["name"],
-            asset["browser_download_url"],
-            asset["content_type"],
-            int(asset["size"]),
-        ]
-    ]
+        return [*gyan_releases, *btbn_releases], nightly
 
 
 def extract(zippaths, dst, progress=None):
@@ -246,7 +133,7 @@ def set_env_vars(vars, bindir):
     for k, v in vars.items():
         if get_env(k) != v:
             sp.run(
-                f'setx {k} {bindir if v == "path" else get_binpath(bindir, v)}',
+                f"setx {k} {bindir if v == 'path' else get_binpath(bindir, v)}",
                 stdout=sp.DEVNULL,
             )
 
@@ -266,22 +153,3 @@ def get_bindir(install_dir):
 
 def get_binpath(install_dir, app):
     return path.join(install_dir, "ffmpeg", "bin", app + ".exe")
-
-
-def parse_version(ver_line, basedir):
-    m = re.match(r"ffmpeg version (.+)-www\.gyan\.dev", ver_line)
-    if m:
-        ver, opt = m[1].rsplit("-", 1)
-        try:
-            ver = Version(ver)
-        except:
-            pass
-
-        if opt == "full_build" and len(
-            glob(path.join(basedir, "ffmpeg", "bin", "av*.dll"))
-        ):
-            opt = "shared"
-
-        return ver, asset_names[opt]
-    else:
-        return None

@@ -1,28 +1,43 @@
-import argparse, os
-from . import _backend as ffdl
-import functools
-from tempfile import mkdtemp
+from __future__ import annotations
+
+import argparse
+import os
+from collections import defaultdict
 from shutil import rmtree
+from tempfile import mkdtemp
+from typing import Literal
+
+from packaging.version import Version
+from tabulate import tabulate
+from typing_extensions import LiteralString  # <3.11
+
+from . import _backend as ffdl
 from ._progress import DownloadProgress, InstallProgress
 
 
-def _print_version_table(releases):
+def _print_version_table(releases: list[ffdl.Build]):
     if len(releases):
-        # determine the # of characters
-        vlen, olen = functools.reduce(
-            lambda l, r: (
-                max(l[0], len(str(r[0]))),
-                0 if r[1] is None else max(l[1], len(r[1])),
-            ),
-            releases,
-            (0, 0),
+        versions = defaultdict(list)
+
+        for build in releases:
+            versions[(str(build.version), build.provider)].append(
+                f"{build.build_type}*" if build.cached else build.build_type
+            )
+
+        print(
+            tabulate(
+                [
+                    (ver, ", ".join(builds), provider)
+                    for (ver, provider), builds in versions.items()
+                ],
+                headers=[
+                    "Version",
+                    "Available Builds (*=cached)",
+                    "Provider",
+                ],
+            )
         )
-        hdr = "Version@Option" if olen else "Version"
-        w = vlen + 1 + olen
-        print(hdr)
-        print("-" * max(w, len(hdr)))
-        for v, o in releases:
-            print(f"{v}@{o}" if o else v)
+        print("\nTo install specific build, ffdl install <version>@<build_type>")
     else:
         print("No matching version found.")
 
@@ -46,8 +61,7 @@ def cache_dir(args):
 def cache_list(args):
     files = ffdl.cache_list()
     if len(files):
-        for f in files:
-            print(f)
+        _print_version_table(files)
     else:
         print("no file in cache")
 
@@ -57,28 +71,32 @@ def cache_remove(args):
 
 
 def cache_purge(args):
-    raise NotImplementedError
+    if not args.y:
+        ans = input("Delete all previously downloaded ffmpeg files in the cache?")
+        if ans and ans.lower() not in ("y", "yes"):
+            print("\ncache purge canceled")
+            return True
+
+    ffdl.cache_purge()
 
 
 def download(args):
     # select the version/asset
-    version = ffdl.search(
+    build = ffdl.search(
         args.version, True, args.force, args.proxy, args.retries, args.timeout
     )
-    if version is None:
+    if build is None:
         raise RuntimeError(
             f"Version {args.version} of FFmpeg is either invalid or not available prebuilt."
             if args.version
-            else f"No matching version of FFmpeg is found."
+            else "No matching version of FFmpeg is found."
         )
 
-    info = ffdl.gather_download_info(*version, args.no_cache_dir)
-
-    if inquire_downloading(info, args):
-        return  # canceled
+    # if inquire_downloading(build, args):
+    #     return  # canceled
 
     dstpaths = ffdl.download(
-        info,
+        build,
         dst=args.dst,
         no_cache_dir=args.no_cache_dir,
         proxy=args.proxy,
@@ -95,11 +113,15 @@ def download(args):
         print(f"  {dstpath}")
 
 
-def compose_version_spec(version, option):
+def compose_version_spec(
+    version: Version | Literal["snapshot"], option: LiteralString | None = None
+):
     return f"{version}@{option}" if option else str(version)
 
 
-def inquire_downloading(download_info, args):
+def inquire_downloading(download_info: ffdl.Build, args):
+
+    download_info
     if args.no_cache_dir or not all(entry[-1] for entry in download_info):
         if not args.y:
             ans = input(ffdl.disclaimer_text)
@@ -127,61 +149,63 @@ def install(args):
         env_vars = ffdl.presets_to_env_vars(args.presets, env_vars)
 
     # find existing version
-    current_version = ffdl.ffmpeg_version()
+    ver_info = ffdl.ffmpeg_version()
+    if ver_info is None:
+        current_version, current_build_type = None, None
+        cur_ver_spec = None
+    else:
+        current_version, _, current_build_type = ver_info
+        cur_ver_spec = compose_version_spec(current_version, current_build_type)
 
     def print_no_need():
         print(
-            f"Requirement already satisfied: ffmpeg=={compose_version_spec(*current_version)} in {ffdl.bin_dir()}"
+            f"Requirement already satisfied: ffmpeg=={cur_ver_spec} in {ffdl.bin_dir()}"
         )
 
-    if args.version is None and current_version is not None and not args.upgrade:
+    if args.version is None and cur_ver_spec is not None and not args.upgrade:
         print_no_need()
         return
 
     # select the version/asset
     print(f"Collecting ffmpeg {args.version or ''}")
-    version = ffdl.search(
+    build = ffdl.search(
         args.version, True, args.force, args.proxy, args.retries, args.timeout
     )
+    version = build and build.version
     if version is None:
         raise RuntimeError(
             f"Version {args.version} of FFmpeg is either invalid or not available prebuilt."
         )
-    if current_version == version or (
-        args.version is None
-        and args.upgrade
-        and current_version is not None
-        and current_version[0] == version[0]
-    ):
+    else:
+        ver_spec = compose_version_spec(version, build.build_type)
+
+    if (current_version == version and args.version is None) or not args.upgrade:
         print_no_need()
         return
 
-    ver_spec = compose_version_spec(*version)
-
     no_cache_dir = args.no_cache_dir
 
-    download_info = ffdl.gather_download_info(*version, no_cache_dir=no_cache_dir)
-
     # filename, url, content_type, size, cache_file, cache_exists
-    for entry in download_info:
-        sz = entry[3]
+    cached = not no_cache_dir and build.cached
+    for entry in build.files:
+        sz = entry.size
         if sz is None:
             sz = ""
-        elif isinstance(sz, int):
+        else:
             sz = f"({round(sz / 1048576)} MB)"
-        action = "Using cached" if not no_cache_dir and entry[-1] else "Downloading"
-        print(f"  {action} {entry[0]} {sz}")
+        action = "Using cached" if cached else "Downloading"
+        print(f"  {action} {entry.url} {sz}")
 
     # show disclaimer if not omitted
-    if inquire_downloading(download_info, args):
-        # canceled by user
-        return
+    # if inquire_downloading(download_info, args):
+    # canceled by user
+    # return
 
     cache_dir = mkdtemp() if no_cache_dir else ffdl.cache_dir()
     try:
         # download the install file(s)
         dstpaths = ffdl.download(
-            download_info,
+            build,
             dst=cache_dir,
             no_cache_dir=no_cache_dir,
             proxy=args.proxy,
@@ -194,14 +218,14 @@ def install(args):
             return
 
         if current_version is not None:
-            curr_ver_spec = compose_version_spec(*current_version)
+            curr_ver_spec = compose_version_spec(current_version)
             print("Attempting uninstall existing ffmpeg binaries")
             print(f"  Found existing FFmpeg installation: {curr_ver_spec}")
             print(f"  Uninstalling {curr_ver_spec}:")
             ffdl.remove()
             print(f"    Successfully uninstalled  {curr_ver_spec}")
 
-        print(f"Installing collected FFmpeg binaries: {ver_spec}")
+        print(f"Installing collected FFmpeg binaries: {build.version}")
 
         ffdl.install(*dstpaths, progress=InstallProgress)
 
@@ -211,28 +235,36 @@ def install(args):
 
     # clear existing env vars if requested
     if args.reset_env:
-        print(f"Clearing previously set environmental variables")
+        print("Clearing previously set environmental variables")
         ffdl.clr_env_vars()
 
     # set symlinks or env vars
     ffdl.set_env_vars(args.add_path, env_vars, args.no_simlinks)
 
     print(
-        f"Successfully installed FFmpeg binaries: {ver_spec} in\n    {ffdl.ffmpeg_path()}"
+        f"Successfully installed FFmpeg binaries: {ver_spec} in\n    {ffdl.ffmpeg_path('ffmpeg')}"
     )
+
+    import subprocess as sp
+
+    print(sp.run([ffdl.ffmpeg_path("ffmpeg"), "-version"]).stdout)
 
 
 def uninstall(args):
-    ver = ffdl.ffmpeg_version()
-    if ver is None:
+    # find existing version
+    ver_info = ffdl.ffmpeg_version()
+    if ver_info is None:
         print("\nNo FFmpeg build has been downloaded.")
         return
 
-    print(f"Found existing FFmpeg installation: {compose_version_spec(*ver)}")
-    print("  Would remove:")
-    print(f"    {os.path.join(ffdl.get_dir(),'ffmpeg','*')}")
+    current_version, _, current_build_type = ver_info
+    cur_ver_spec = compose_version_spec(current_version, current_build_type)
 
-    if not args.y and input(f"Proceed (Y/n)?: ").lower() not in ("y", "yes", ""):
+    print(f"Found existing FFmpeg installation: {cur_ver_spec}")
+    print("  Would remove:")
+    print(f"    {os.path.join(ffdl.get_dir(), 'ffmpeg', '*')}")
+
+    if not args.y and input("Proceed (Y/n)?: ").lower() not in ("y", "yes", ""):
         # aborted by user
         return
 
@@ -242,7 +274,7 @@ def uninstall(args):
     # remove the ffmpeg directory
     ffdl.remove(ignore_errors=False)
 
-    print(f"  Successfully uninstalled FFmpeg: {compose_version_spec(*ver)}")
+    print(f"  Successfully uninstalled FFmpeg: {cur_ver_spec}")
 
 
 def show(args):
@@ -392,6 +424,9 @@ def main(prog: str = ""):
     parser_cache_remove.set_defaults(func=cache_remove)
     parser_cache_purge = cache_subparsers.add_parser(
         "purge", help="Remove all items from the cache."
+    )
+    parser_cache_purge.add_argument(
+        "-y", action="store_true", help="Don't ask for confirmation of cache purging."
     )
     parser_cache_purge.set_defaults(func=cache_purge)
 
