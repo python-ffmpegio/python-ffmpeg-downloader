@@ -227,6 +227,7 @@ class ConfigBase(metaclass=abc.ABCMeta):
                 # incompatible old release format
                 data["last_updated"] = None
                 data["releases"] = []
+                data["nightly"] = []
 
         except (ModuleNotFoundError, FileNotFoundError):
             data = {
