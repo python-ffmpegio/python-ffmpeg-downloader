@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-05-19
+
+### Fixed
+
+- a bug in updating the config file in old format <0.5.0
+- removed debug print message at the end of install command
+
+
 ## [0.5.0] - 2026-05-17
 
 ### Added
