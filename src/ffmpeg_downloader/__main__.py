@@ -245,10 +245,6 @@ def install(args):
         f"Successfully installed FFmpeg binaries: {ver_spec} in\n    {ffdl.ffmpeg_path('ffmpeg')}"
     )
 
-    import subprocess as sp
-
-    print(sp.run([ffdl.ffmpeg_path("ffmpeg"), "-version"]).stdout)
-
 
 def uninstall(args):
     # find existing version
