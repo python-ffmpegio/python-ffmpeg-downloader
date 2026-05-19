@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-17
+
+### Added
+
+- Support to install the latest git master snapshot and old releases
+- Architecture auto-detection
+- Two new providers: BtBN and OSXExperts (arm64 support)
+
+### Changed
+
+- Revamped provider/configuration data handling
+- ``ffdl.ffmpeg_version`` returns ``Version``, provider string, and build type string if installed
+
 ## [0.4.1] - 2025-11-14
 
 ### Fixed
