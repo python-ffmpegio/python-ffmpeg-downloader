@@ -104,109 +104,102 @@ The ``list`` command lists all the releases:
 
   ffdl list
 
-.. raw:: html
+An example Linux output:
 
-  <details>
-    <summary>Example output in Linux</summary>
+.. code-block:: bash
 
-    <pre>
-      <code>
-        Version        Available Builds (*=cached)          Provider
-        -------------  -----------------------------------  -----------------
-        3.3.4          static                               johnvansickle.com
-        3.4.2          static                               johnvansickle.com
-        4.0.3          static                               johnvansickle.com
-        4.1.4          static                               johnvansickle.com
-        4.2.1          static                               johnvansickle.com
-        4.2.2          static                               johnvansickle.com
-        4.3.1          static                               johnvansickle.com
-        4.3.2          static                               johnvansickle.com
-        4.4            static                               johnvansickle.com
-        4.4.1          static                               johnvansickle.com
-        5.0.1          static                               johnvansickle.com
-        5.1.1          static                               johnvansickle.com
-        5.1.5.post106  gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        5.1.6.post16   gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        6.0            static                               johnvansickle.com
-        6.0.1          static                               johnvansickle.com
-        6.1.1.post329  gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        6.1.2.post192  gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        7.0.1.post221  gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        7.0.2          static*                              johnvansickle.com
-        7.0.2.post6    gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        7.1.post214    gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        7.1.1.post57   gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        7.1.2.post7    gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        7.1.3.post46   gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        8.0.post30     gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        8.0.1.post66   gpl, gpl-shared, lgpl, lgpl-shared   btbn
-        8.1.post11     gpl*, gpl-shared, lgpl, lgpl-shared  btbn
-        8.1.1.post1    gpl*, gpl-shared*, lgpl*             btbn
-        8.1.1.post2    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  Version        Available Builds (*=cached)          Provider
+  -------------  -----------------------------------  -----------------
+  3.3.4          static                               johnvansickle.com
+  3.4.2          static                               johnvansickle.com
+  4.0.3          static                               johnvansickle.com
+  4.1.4          static                               johnvansickle.com
+  4.2.1          static                               johnvansickle.com
+  4.2.2          static                               johnvansickle.com
+  4.3.1          static                               johnvansickle.com
+  4.3.2          static                               johnvansickle.com
+  4.4            static                               johnvansickle.com
+  4.4.1          static                               johnvansickle.com
+  5.0.1          static                               johnvansickle.com
+  5.1.1          static                               johnvansickle.com
+  5.1.5.post106  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  5.1.6.post16   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  6.0            static                               johnvansickle.com
+  6.0.1          static                               johnvansickle.com
+  6.1.1.post329  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  6.1.2.post192  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  7.0.1.post221  gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  7.0.2          static*                              johnvansickle.com
+  7.0.2.post6    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  7.1.post214    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  7.1.1.post57   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  7.1.2.post7    gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  7.1.3.post46   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  8.0.post30     gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  8.0.1.post66   gpl, gpl-shared, lgpl, lgpl-shared   btbn
+  8.1.post11     gpl*, gpl-shared, lgpl, lgpl-shared  btbn
+  8.1.1.post1    gpl*, gpl-shared*, lgpl*             btbn
+  8.1.1.post2    gpl, gpl-shared, lgpl, lgpl-shared   btbn
 
-        To install specific build, ffdl install &lt;version&gt;@&lt;build_type&gt;
-      </code>
-    </pre>
-  </details>
-  <details>
-    <summary>Example output in Windows</summary>
-    <pre>
-      <code>
-        Version        Available Builds (*=cached)         Provider
-        -------------  ----------------------------------  ----------
-        4.4            essentials, full, full-shared       gyan
-        4.4.1          essentials, full, full-shared       gyan
-        5.0            essentials, full, full-shared       gyan
-        5.0.1          essentials, full, full-shared       gyan
-        5.1            essentials, full, full-shared       gyan
-        5.1.1          essentials, full, full-shared       gyan
-        5.1.2          essentials, full, full-shared       gyan
-        5.1.5.post106  gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        5.1.6.post16   gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        6.0            essentials, full, full-shared       gyan
-        6.1            essentials, full, full-shared       gyan
-        6.1.1          essentials, full, full-shared       gyan
-        6.1.1.post329  gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        6.1.2.post192  gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        7.0            essentials, full, full-shared       gyan
-        7.0.1          essentials, full, full-shared       gyan
-        7.0.1.post221  gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        7.0.2          essentials, full, full-shared       gyan
-        7.0.2.post6    gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        7.1            essentials, full, full-shared       gyan
-        7.1.post214    gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        7.1.1          essentials, full, full-shared       gyan
-        7.1.1.post57   gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        7.1.2.post7    gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        7.1.3.post46   gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        8.0            essentials, full, full-shared       gyan
-        8.0.post30     gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        8.0.1          essentials, full, full-shared       gyan
-        8.0.1.post66   gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        8.1            essentials, full, full-shared       gyan
-        8.1.post11     gpl, gpl-shared, lgpl, lgpl-shared  btbn
-        8.1.1          essentials, full, full-shared       gyan
-        8.1.1.post2    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  To install specific build, ffdl install <version>@<build_type>
 
-        To install specific build, ffdl install &lt;version&gt;@&lt;build_type&gt;
-      </code>
-    </pre>
+Note: Currently ``-shared`` builds in Linux could not be used in Python
 
-    Note: <pre>-shared</pre> builds are currently not working.
-  </details>
-  <details>
-    <summary>Example output in MacOS</summary>
-    <pre>
-      <code>
-          Version  Available Builds (*=cached)    Provider
-        ---------  -----------------------------  --------------
-              8.1  static                         osxexperts.net
 
-        To install specific build, ffdl install &lt;version&gt;@&lt;build_type&gt;
-      </code>
-    </pre>
-  </details>
+Windows output:
 
+.. code-block:: bash
+
+  Version        Available Builds (*=cached)         Provider
+  -------------  ----------------------------------  ----------
+  4.4            essentials, full, full-shared       gyan
+  4.4.1          essentials, full, full-shared       gyan
+  5.0            essentials, full, full-shared       gyan
+  5.0.1          essentials, full, full-shared       gyan
+  5.1            essentials, full, full-shared       gyan
+  5.1.1          essentials, full, full-shared       gyan
+  5.1.2          essentials, full, full-shared       gyan
+  5.1.5.post106  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  5.1.6.post16   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  6.0            essentials, full, full-shared       gyan
+  6.1            essentials, full, full-shared       gyan
+  6.1.1          essentials, full, full-shared       gyan
+  6.1.1.post329  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  6.1.2.post192  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  7.0            essentials, full, full-shared       gyan
+  7.0.1          essentials, full, full-shared       gyan
+  7.0.1.post221  gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  7.0.2          essentials, full, full-shared       gyan
+  7.0.2.post6    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  7.1            essentials, full, full-shared       gyan
+  7.1.post214    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  7.1.1          essentials, full, full-shared       gyan
+  7.1.1.post57   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  7.1.2.post7    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  7.1.3.post46   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  8.0            essentials, full, full-shared       gyan
+  8.0.post30     gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  8.0.1          essentials, full, full-shared       gyan
+  8.0.1.post66   gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  8.1            essentials, full, full-shared       gyan
+  8.1.post11     gpl, gpl-shared, lgpl, lgpl-shared  btbn
+  8.1.1          essentials, full, full-shared       gyan
+  8.1.1.post2    gpl, gpl-shared, lgpl, lgpl-shared  btbn
+
+  To install specific build, ffdl install <version>@<build_type>
+
+
+For MacOS (arm64), only one file would be listed:
+ 
+.. code-block:: bash
+
+    Version  Available Builds (*=cached)    Provider
+  ---------  -----------------------------  --------------
+        8.1  static                         osxexperts.net
+
+  To install specific build, ffdl install <version>@<build_type>
+
+ 
 The ``search`` command lists only the releases that matches the query:
 
 .. code-block:: bash
