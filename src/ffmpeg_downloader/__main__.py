@@ -163,6 +163,7 @@ def install(args):
         )
 
     if args.version is None and cur_ver_spec is not None and not args.upgrade:
+        # neither version or upgrade specified
         print_no_need()
         return
 
@@ -179,7 +180,12 @@ def install(args):
     else:
         ver_spec = compose_version_spec(version, build.build_type)
 
-    if (current_version == version and args.version is None) or not args.upgrade:
+    if (
+        args.version is not None
+        and current_version == version
+        and build.build_type == current_build_type
+    ):
+        # version specified and installed version matches the requested
         print_no_need()
         return
 
