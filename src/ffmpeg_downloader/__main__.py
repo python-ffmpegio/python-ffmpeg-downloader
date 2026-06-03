@@ -224,14 +224,14 @@ def install(args):
             return
 
         if current_version is not None:
-            curr_ver_spec = compose_version_spec(current_version)
+            curr_ver_spec = compose_version_spec(current_version, current_build_type)
             print("Attempting uninstall existing ffmpeg binaries")
             print(f"  Found existing FFmpeg installation: {curr_ver_spec}")
             print(f"  Uninstalling {curr_ver_spec}:")
             ffdl.remove()
             print(f"    Successfully uninstalled  {curr_ver_spec}")
 
-        print(f"Installing collected FFmpeg binaries: {build.version}")
+        print(f"Installing collected FFmpeg binaries: {ver_spec}")
 
         ffdl.install(*dstpaths, progress=InstallProgress)
 
