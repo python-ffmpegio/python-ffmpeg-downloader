@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import logging
 import platform
 import re
 from itertools import chain
 from typing import Literal, get_args
 
+import requests
 from packaging.version import Version
 from typing_extensions import LiteralString  # <3.11
 
 from .._config import Build, BuildFile
 from .._download_helper import download_info
+
+logger = logging.getLogger(__name__)
 
 provider = "johnvansickle.com"
 home_url = "https://johnvansickle.com/ffmpeg"
@@ -96,8 +100,14 @@ def gather_builds(
     :return nightly_catalog: list of nightly build info objects
     """
 
-    release_catalog = get_latest_release(arch, requests_kws)
-    release_catalog.extend(get_old_releases(arch, requests_kws))
+    try:
+        release_catalog = get_latest_release(arch, requests_kws)
+        release_catalog.extend(get_old_releases(arch, requests_kws))
+    except requests.exceptions.ConnectTimeout:
+        logging.debug(
+            "failed to retrieve releases from https://johnvansickle.com/ffmpeg"
+        )
+        release_catalog = []
     nightly_catalog = [] if skip_nightly else get_latest_snapshot(arch, requests_kws)
 
     return release_catalog, nightly_catalog
@@ -114,7 +124,13 @@ def get_latest_release(
         {"Accept": "text/plain"},
         requests_kws=requests_kws,
     ).text
-    ver = Version(re.search(r"version: (\d+\.\d+(?:\.\d+)?)", readme)[1])
+
+    rel = re.search(r"version: (\d+\.\d+(?:\.\d+)?)", readme)
+    if not rel:
+        logger.debug("failed to retrieve https://johnvansickle.com/ffmpeg/readme.txt")
+        return []
+
+    ver = Version(rel[1])
 
     return [
         Build(
