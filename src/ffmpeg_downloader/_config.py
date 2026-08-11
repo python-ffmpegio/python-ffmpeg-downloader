@@ -133,7 +133,7 @@ class ConfigBase(metaclass=abc.ABCMeta):
     def latest_release_version(self) -> Version:
         """latest release version"""
 
-        return max((r.version for r in self.releases))
+        return max(r.version for r in self.releases)
 
     @property
     def latest_snapshot(self) -> list[Build]:
