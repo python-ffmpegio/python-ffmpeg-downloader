@@ -240,7 +240,7 @@ class ConfigBase(metaclass=abc.ABCMeta):
         self.last_updated = data["last_updated"]
         self._releases = data["releases"]
         self._nightly = data["nightly"]
-        self.install_setup = data["install_setup"]
+        self.install_setup = data.get("install_setup", None)
         self.dirty = False
 
     def dump(self):
